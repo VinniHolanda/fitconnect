@@ -5071,4 +5071,23 @@ function pwaDismiss(){
       try{localStorage.setItem(_qkey,JSON.stringify(failed));}catch(e){}
       var synced=_q.length-failed.length;
       if(synced>0){
-        if(typeof renderStudentHome==='functi
+        if(typeof renderStudentHome==='function')renderStudentHome();
+        if(typeof toast==='function')toast(synced+' treino(s) sincronizado(s) com a nuvem!');
+      }
+      _updateOfflineBadge();
+      _syncLock=false;
+    }).catch(function(){_syncLock=false;});
+  }
+  window.addEventListener('online',function(){
+    _updateOnline();
+    if(typeof toast==='function')toast('Conexão restaurada!');
+    setTimeout(_nucleo_syncQ,1500); /* pequeno delay para a conexão estabilizar */
+  });
+  /* Tenta sync também ao iniciar online */
+  window.addEventListener('load',function(){if(navigator.onLine)setTimeout(_nucleo_syncQ,3000);});
+  /* Checar ao carregar */
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',_updateOnline);
+  } else { _updateOnline(); }
+})();
+</script>
