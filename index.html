@@ -4880,7 +4880,8 @@ async function saveEditProfile(cid){
     renderSidebar();
     openClient(cid);
     toast('Perfil atualizado!');
-  }catch(e){toast('Erro ao salvar ('+e.message+')');}\n}
+  }catch(e){toast('Erro ao salvar ('+e.message+')');}
+}
 async function saveClient(){
   const g=i=>document.getElementById(i);const name=g("f_name").value.trim();
   if(!name){g("errHint").textContent="Informe o nome.";g("f_name").focus();g("f_name").style.borderColor="var(--danger)";return;}
@@ -5081,3 +5082,4 @@ function pwaDismiss(){
   } else { _updateOnline(); }
 })();
 </script>
+ 
