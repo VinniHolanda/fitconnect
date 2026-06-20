@@ -1653,7 +1653,7 @@ async function persist(){if(trainer)await dbSaveClients(trainer.id,clients);}
 async function persistStudent(){ if(sb)return; if(student&&sClient)await dbSaveClient(sClient); }  // na nuvem o aluno só escreve em sessions
 let stuWeek=0,stuDay=0,stuExLog=[],stuInSession=false,stuFinishing=false,stuShowWellness=false,stuWellness=null,stuTab='home',stuExSearch='',stuExView=null,stuChatMsg='',stuVolumeAdj=null,stuProfileData=null;
 let _sessStartTs=null; // timestamp do início da sessão (para timer em background)
-let stuGuided=false, stuGuidedIdx=0, stuFeedback={nutrition:3,hydration:3};
+let stuGuided=false, stuGuidedIdx=0, stuFeedback={};
 let _rtSec=0,_rtMax=0,_rtInterval=null;
 
 /* ── Timer de sessão robusto: usa timestamp absoluto (não setInterval) ── */
@@ -1911,11 +1911,7 @@ function renderStuCards(){
     el.innerHTML=stuExLog.map((ex,i)=>buildExCard(ex,i)).join("");
   }
 }
-function stuSetFb(field,val){
-  stuFeedback[field]=val;
-  const pre=field==='nutrition'?'fb_nut_':'fb_hyd_';
-  for(let i=1;i<=5;i++){const b=document.getElementById(pre+i);if(b)b.className='fb-btn'+(i===val?' sel':'');}
-}
+
 async function stuFinishSession(){
   const g=id=>document.getElementById(id);
   const srpe=+g("su_srpe").value,min=+g("su_min").value;
@@ -1929,7 +1925,7 @@ async function stuFinishSession(){
   const _limBase2=sessionTonnageLimit((_day2||{exercises:[]}).exercises,_wk2,_c2.rpeLog||[],_c2.level);
   const s={id:newId(),date:g("su_date").value||new Date().toISOString().slice(0,10),
     dayName:(sClient.program.days[stuDay]||{}).name||"",min,srpe,week:stuWeek,by:"aluno",exercises,tonnage:totalTonnage,
-    nutrition:stuFeedback.nutrition||3,hydration:stuFeedback.hydration||3};
+    };
   try{
     await dbAddSession(sClient,s);stuExLog=[];stuInSession=false;stuFinishing=false;stuShowWellness=false;stuWellness=null;stuVolumeAdj=null;_sessStartTs=null;stopRestTimer();
     renderStudentHome();
@@ -2294,12 +2290,7 @@ function renderStudentHome(){
           <div class="fl" style="flex:1.6"><label>Esforço percebido (0-10)</label><div style="display:flex;align-items:center;gap:8px"><select id="su_srpe" onchange="(function(v){var e=document.getElementById('su_srpe_emoji');if(e){e.textContent=RPE_EMOJI[+v]||'';}  })(this.value)">${CR10.map((t,n)=>`<option value="${n}" ${n===7?"selected":""}>${esc(t)}</option>`).join("")}</select><span id="su_srpe_emoji" style="font-size:22px;line-height:1;flex-shrink:0">🔥</span></div></div>
           <button class="btn accent" style="align-self:flex-end" onclick="stuFinishSession()">Salvar treino</button>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
-          <div><label style="display:block;font-size:11px;font-weight:700;color:var(--text-faint);margin-bottom:5px">🥗 Nutrição hoje</label>
-            <div class="fb-row">${[1,2,3,4,5].map(n=>`<button id="fb_nut_${n}" class="fb-btn${n===3?' sel':''}" onclick="stuSetFb('nutrition',${n})">${n}</button>`).join("")}</div></div>
-          <div><label style="display:block;font-size:11px;font-weight:700;color:var(--text-faint);margin-bottom:5px">💧 Hidratação</label>
-            <div class="fb-row">${[1,2,3,4,5].map(n=>`<button id="fb_hyd_${n}" class="fb-btn${n===3?' sel':''}" onclick="stuSetFb('hydration',${n})">${n}</button>`).join("")}</div></div>
-        </div>
+
         <div style="display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap">
           <button class="btn ghost sm" onclick="stuBackToLog()">← Voltar ao log de séries</button>
           <span class="ai-hint" style="margin:0">CR-10: 0 = repouso · 5 = difícil · 10 = máximo</span>
@@ -4332,8 +4323,7 @@ function buildProgressReport(c, log){
   const adherencePct=plannedTotal>0?Math.min(100,Math.round(doneSet.size/plannedTotal*100)):null;
   const checkIns=log.filter(s=>s.checkin).length;
   const fullSess=log.filter(s=>!s.checkin&&s.tonnage>0).length;
-  const avgNut=log.filter(s=>s.nutrition).length?Math.round(log.filter(s=>s.nutrition).reduce((t,s)=>t+(+s.nutrition||0),0)/log.filter(s=>s.nutrition).length*10)/10:null;
-  const avgHyd=log.filter(s=>s.hydration).length?Math.round(log.filter(s=>s.hydration).reduce((t,s)=>t+(+s.hydration||0),0)/log.filter(s=>s.hydration).length*10)/10:null;
+
   const adherHTML=adherencePct!=null?'<div class="panel" style="margin-top:0">'
     +'<div class="panel-title"><span class="dot"></span>Adesão ao programa</div>'
     +'<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px">'
@@ -4348,12 +4338,7 @@ function buildProgressReport(c, log){
     +(checkIns?'<div style="flex:1;min-width:80px;background:var(--surface-2);border-radius:10px;padding:10px 14px">'
     +'<div style="font-size:22px;font-weight:800;color:var(--text-dim)">'+checkIns+'</div>'
     +'<div style="font-size:11px;color:var(--text-faint);margin-top:2px">check-ins</div></div>':'')
-    +(avgNut?'<div style="flex:1;min-width:80px;background:var(--surface-2);border-radius:10px;padding:10px 14px">'
-    +'<div style="font-size:22px;font-weight:800;color:var(--text)">'+avgNut+'<span style="font-size:13px">/5</span></div>'
-    +'<div style="font-size:11px;color:var(--text-faint);margin-top:2px">🥗 nutrição média</div></div>':'')
-    +(avgHyd?'<div style="flex:1;min-width:80px;background:var(--surface-2);border-radius:10px;padding:10px 14px">'
-    +'<div style="font-size:22px;font-weight:800;color:#60b4ff">'+avgHyd+'<span style="font-size:13px">/5</span></div>'
-    +'<div style="font-size:11px;color:var(--text-faint);margin-top:2px">💧 hidratação média</div></div>':'')
+
     +'</div></div>':"";
   // ── Histórico de 1RM estimado por exercício (Epley) ────────────────────────
   const exRm={};
@@ -4381,45 +4366,34 @@ function buildProgressReport(c, log){
       const al=a.pts[a.pts.length-1].rm,bl=b.pts[b.pts.length-1].rm;
       return bl-al;
     });
+  function _buildSparkline(pts){
+    if(pts.length<2)return '';
+    var vals=pts.map(function(p){return p.rm;});
+    var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=mx-mn||1;
+    var W=64,H=28,pad=3;
+    var coords=vals.map(function(v,i){
+      var x=pad+(i/(vals.length-1))*(W-pad*2);
+      var y=H-pad-((v-mn)/rng)*(H-pad*2);
+      return x.toFixed(1)+','+y.toFixed(1);
+    });
+    var last=coords[coords.length-1].split(',');
+    return '<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" style="display:block;flex-shrink:0">'
+      +'<polyline points="'+coords.join(' ')+'" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>'
+      +'<circle cx="'+last[0]+'" cy="'+last[1]+'" r="3" fill="var(--accent)"/>'
+      +'</svg>';
+  }
   const rmCards=rmSeries.map(function(s,si){
     const first=s.pts[0],last=s.pts[s.pts.length-1];
     const diff=+(last.rm-first.rm).toFixed(1);
-    const trend=diff>0?'↑':diff<0?'↓':'→';
     const trendCol=diff>0?'var(--accent)':diff<0?'#ff8080':'#aaa';
-    const bestRm=Math.max.apply(null,s.pts.map(function(p){return p.rm;}));
-    const detailId='_rm_detail_'+si;
-    const arrowId='_rm_arrow_'+si;
-    const rows=s.pts.slice(-8).reverse().map(function(p){
-      const isBest=p.rm===bestRm;
-      return '<tr>'
-        +'<td style="padding:6px 10px;color:var(--text-faint);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--line-soft)">'+esc(p.date.slice(5))+'</td>'
-        +'<td style="padding:6px 10px;text-align:right;font-size:12px;border-bottom:1px solid var(--line-soft)">'+p.kg+' kg &times; '+p.reps+'</td>'
-        +'<td style="padding:6px 10px;text-align:right;font-size:12px;font-weight:700;border-bottom:1px solid var(--line-soft);color:'+(isBest?'var(--accent)':'var(--text)')+'">'+p.rm+(isBest?' ★':'')+'</td>'
-        +'</tr>';
-    }).join('');
-    /* linha do header (sempre visível) */
-    var header='<div onclick="_toggleRm(\''+detailId+'\',\''+arrowId+'\')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;border-radius:10px;transition:background .15s" onmouseover="this.style.background=\'var(--surface-2)\'" onmouseout="this.style.background=\'\'">'
-      +'<span style="font-size:13px;font-weight:700;color:var(--text);flex:1">'+esc(s.name)+'</span>'
-      +(s.pts.length>1?'<span style="font-size:11px;font-weight:700;color:'+trendCol+'">'+trend+(diff!==0?' '+Math.abs(diff)+' kg':'')+'</span>':'')
-      +'<span style="font-size:13px;font-weight:800;color:var(--accent);min-width:60px;text-align:right">'+last.rm+' kg</span>'
-      +'<span style="font-size:11px;color:var(--text-faint);min-width:28px;text-align:right">'+s.pts.length+'x</span>'
-      +'<span id="'+arrowId+'" style="font-size:12px;color:var(--text-faint);transition:transform .2s;display:inline-block">▼</span>'
+    const trendTxt=diff>0?'↑ '+Math.abs(diff):diff<0?'↓ '+Math.abs(diff):'→';
+    const spark=s.pts.length>1?_buildSparkline(s.pts):'';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line-soft)">'
+      +'<span style="font-size:13px;font-weight:700;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(s.name)+'</span>'
+      +spark
+      +'<span style="font-size:13px;font-weight:800;color:var(--accent);min-width:56px;text-align:right">'+last.rm+' kg</span>'
+      +'<span style="font-size:11px;font-weight:700;color:'+trendCol+';min-width:40px;text-align:right">'+trendTxt+'</span>'
       +'</div>';
-    /* detalhe (oculto por padrão) */
-    var detail='<div id="'+detailId+'" style="display:none;padding:0 12px 12px">'
-      +'<table style="width:100%;border-collapse:collapse;margin-bottom:8px">'
-      +'<thead><tr>'
-      +'<th style="text-align:left;font-size:10px;font-weight:600;color:var(--text-faint);padding:0 10px 6px;text-transform:uppercase;letter-spacing:.05em">Data</th>'
-      +'<th style="text-align:right;font-size:10px;font-weight:600;color:var(--text-faint);padding:0 10px 6px;text-transform:uppercase;letter-spacing:.05em">Carga</th>'
-      +'<th style="text-align:right;font-size:10px;font-weight:600;color:var(--text-faint);padding:0 10px 6px;text-transform:uppercase;letter-spacing:.05em">1RM est.</th>'
-      +'</tr></thead>'
-      +'<tbody>'+rows+'</tbody>'
-      +'</table>'
-      +'<div style="font-size:10px;color:var(--text-faint);display:flex;gap:14px;flex-wrap:wrap">'
-      +'<span>Melhor 1RM: <strong style="color:var(--accent)">'+bestRm+' kg</strong></span>'
-      +'<span>Epley: kg × (1 + reps/30)</span>'
-      +'</div></div>';
-    return '<div style="border-bottom:1px solid var(--line-soft)">'+header+detail+'</div>';
   }).join('');
 
   // ── Resumo de tonelagem por semana ──────────────────────────────────────────
@@ -4456,7 +4430,7 @@ function buildProgressReport(c, log){
     </div>
   </div>`:"";
   return adherHTML + _wkTonHTML + (rmSeries.length?'<div class="panel" style="margin-top:14px;padding-bottom:4px">'
-    +'<div class="panel-title"><span class="dot"></span>1RM estimado por exercício <span style="font-size:11px;font-weight:400;color:var(--text-faint);margin-left:4px">— clique para ver histórico</span></div>'
+    +'<div class="panel-title"><span class="dot"></span>1RM estimado por exercício</div>'
     +'<div style="margin-top:2px">'+rmCards+'</div>'
     +'</div>':"");
 }
@@ -4678,7 +4652,7 @@ function renderLoadPanel(){
     <td class="cell-ro">${sessionLoad(s)} UA</td>
     <td class="cell-ro">${+s.tonnage?`<b>${(+s.tonnage).toLocaleString('pt-BR')} kg</b>`:'&mdash;'}</td>
     <td class="cell-ro">${_wCol}</td>
-    <td class="cell-ro" style="font-size:12px">${s.nutrition?`<span title="Nutrição">🥗${s.nutrition}</span> <span title="Hidratação">💧${s.hydration||'—'}</span>`:s.checkin?'<span class="checkin-badge">✓ check-in</span>':'—'}</td>
+    <td class="cell-ro" style="font-size:12px">${s.checkin?'<span class="checkin-badge">✓ check-in</span>':'—'}</td>
     <td class="cell-ro" style="color:var(--text-faint)">${esc(s.by||"treinador")}</td>
     <td class="rm" style="white-space:nowrap"><button class="row-x" title="Editar" onclick="trainerEditSession('${c.id}','${s.id}')" style="opacity:0.55;margin-right:3px">✎</button><button class="row-x" onclick="delSession('${s.id}')">✕</button></td></tr>`;}).join(""):"";
   box.innerHTML=`<div class="panel" style="margin-top:14px">
