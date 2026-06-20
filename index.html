@@ -631,6 +631,26 @@
 .aula-dot.realizada{background:var(--accent)}
 .aula-dot.falta{background:var(--danger)}
 .aula-dot.reposicao{background:var(--warn)}
+/* ── Agenda ────────────────────────────────────────────── */
+.agenda-week{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:18px}
+@media(max-width:700px){.agenda-week{grid-template-columns:1fr}}
+.agenda-day{background:var(--surface);border:1px solid var(--line-soft);border-radius:12px;padding:14px 10px;min-height:80px}
+.agenda-day.has-slots{border-color:rgba(200,242,80,.25)}
+.agenda-day-name{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin-bottom:10px;text-align:center}
+.agenda-slot{background:var(--surface-2);border-radius:9px;padding:9px 8px;margin-bottom:7px;cursor:pointer;transition:.15s;text-align:center}
+.agenda-slot:hover{border:1px solid rgba(200,242,80,.3);background:rgba(200,242,80,.05)}
+.agenda-time{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.04em}
+.agenda-avatar{width:32px;height:32px;border-radius:50%;background:rgba(200,242,80,.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--accent);margin:5px auto 3px}
+.agenda-name{font-size:11px;font-weight:700;color:var(--text-dim)}
+.agenda-empty-day{color:var(--text-faint);font-size:20px;text-align:center;padding:12px 0}
+.agenda-edit-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+/* ── Section box alunos ───────────────────────────────── */
+.section-box{background:var(--surface);border:1px solid var(--line-soft);border-radius:var(--radius);padding:20px;margin-top:20px}
+.section-box-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.section-box-head h3{font-size:15px;font-weight:700;color:var(--text)}
+.section-box-count{font-size:12px;color:var(--text-faint);background:var(--surface-2);border-radius:100px;padding:2px 9px;font-weight:700}
+.tag.tipo-p{background:rgba(200,242,80,.1);color:var(--accent);border-color:rgba(200,242,80,.2)}
+.tag.tipo-c{background:rgba(100,160,255,.1);color:#64a0ff;border-color:rgba(100,160,255,.2)}
 </style>
 
 <div class="auth" id="authView" style="display:none">
@@ -648,6 +668,7 @@
     <div class="brand"><div class="mark">FC</div><div><h1>FitConnect</h1><small>Programação de treino</small></div></div>
     <button class="nav-btn primary" onclick="openModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Novo aluno</button>
     <button class="nav-btn" onclick="goDashboard()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Painel</button>
+    <button class="nav-btn" onclick="goAgenda()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agenda</button>
     <button class="nav-btn" onclick="goTemplates()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15" x2="13" y2="15"/></svg>Modelos</button>
     <div class="nav-section">Alunos</div><div class="client-list" id="clientList"></div>
     <div id="nucleo-offline-badge"></div>
@@ -2837,7 +2858,7 @@ function goDashboard(){
     <div class="stat"><div class="n">${withProg}</div><div class="l">Com treino montado</div></div>
     <div class="stat"><div class="n" style="${flags?'color:var(--warn)':''}">${flags}</div><div class="l">Requerem atenção médica (PAR-Q)</div></div></div>
     ${inactivePanel}
-    ${clients.length?`<div class="grid">${clients.map(cardHTML).join("")}</div>`:emptyHTML()}`;
+    ${clients.length?`<div class="section-box"><div class="section-box-head"><h3>Alunos cadastrados</h3><span class="section-box-count">${clients.length}</span></div><div class="grid">${clients.map(cardHTML).join("")}</div></div>`:emptyHTML()}`;
   /* Supabase: carrega datas de última sessão em background para popular o painel de inatividade */
   if(sb&&clients.length&&!Object.keys(_nucleo_lastDates).length){
     sb.from('sessions').select('client_id,date,checkin').then(function(r){
@@ -2860,9 +2881,91 @@ function goDashboard(){
 }
 function emptyHTML(){return `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><div>Você ainda não cadastrou alunos.<br>Clique em <b style="color:var(--accent)">Novo aluno</b> para começar.</div></div>`;}
 function parqFlag(c){return c.parq&&Object.values(c.parq).some(v=>v==="sim");}
-function cardHTML(c){const a=age(c.birth);return `<div class="card" onclick="openClient('${c.id}')">
+/* ============ Agenda ============ */
+function goAgenda(){
+  currentId=null;
+  document.getElementById('crumb').innerHTML='Agenda';
+  document.getElementById('sidebar').classList.remove('open');
+  renderSidebar();
+  document.getElementById('content').innerHTML=buildAgendaView();
+}
+function buildAgendaView(){
+  var DAYS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  var presenciais=clients.filter(function(c){return (c.tipo||'Presencial')==='Presencial';});
+  var html='<div class="page-head"><h2>Agenda semanal</h2>'
+    +'<p>Dias e horários dos alunos presenciais. Edite os horários na ficha de cada aluno (aba Perfil).</p></div>';
+  if(!presenciais.length){
+    return html+'<div class="empty" style="margin-top:40px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><div>Nenhum aluno presencial com horários cadastrados ainda.<br>Abra a ficha de um aluno presencial, vá em <b>Perfil</b> e adicione os horários.</div></div>';
+  }
+  var buckets={0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
+  presenciais.forEach(function(c){
+    (c.agenda||[]).forEach(function(sl){
+      if(buckets[sl.dia]!==undefined){
+        buckets[sl.dia].push({c:c,hora:sl.hora||'--:--'});
+      }
+    });
+  });
+  Object.keys(buckets).forEach(function(d){
+    buckets[d].sort(function(a,b){return a.hora.localeCompare(b.hora);});
+  });
+  var daysOrder=[1,2,3,4,5,6,0];
+  html+='<div class="agenda-week">';
+  daysOrder.forEach(function(d){
+    var slots=buckets[d];
+    html+='<div class="agenda-day'+(slots.length?' has-slots':'')+'">';
+    html+='<div class="agenda-day-name">'+DAYS[d]+'</div>';
+    if(slots.length){
+      slots.forEach(function(sl){
+        html+='<div class="agenda-slot" onclick="openClient(\''+sl.c.id+'\')">'
+          +'<div class="agenda-time">'+esc(sl.hora)+'</div>'
+          +'<div class="agenda-avatar">'+initials(sl.c.name)+'</div>'
+          +'<div class="agenda-name">'+esc(sl.c.name.split(' ')[0])+'</div>'
+          +'</div>';
+      });
+    } else {
+      html+='<div class="agenda-empty-day">—</div>';
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+  return html;
+}
+function addAgendaRowUI(){
+  var container=document.getElementById('agendaRows');
+  if(!container)return;
+  var row=document.createElement('div');
+  row.className='agenda-edit-row';
+  row.innerHTML='<select class="inp ag-dia" style="flex:none;min-width:108px">'
+    +'<option value="1">Segunda</option>'
+    +'<option value="2">Terça</option>'
+    +'<option value="3">Quarta</option>'
+    +'<option value="4">Quinta</option>'
+    +'<option value="5">Sexta</option>'
+    +'<option value="6">Sábado</option>'
+    +'<option value="0">Domingo</option>'
+    +'</select>'
+    +'<input type="time" class="inp ag-hora" value="07:00" style="flex:none;width:110px">'
+    +'<button class="btn ghost sm" style="flex:none" onclick="this.closest(\'.agenda-edit-row\').remove()">✕</button>';
+  container.appendChild(row);
+}
+async function saveAgendaSlots(cid){
+  var c=clients.find(function(x){return x.id===cid;});if(!c)return;
+  var slots=[];
+  document.querySelectorAll('#agendaRows .agenda-edit-row').forEach(function(row){
+    var diaEl=row.querySelector('.ag-dia');
+    var horaEl=row.querySelector('.ag-hora');
+    if(diaEl&&horaEl&&horaEl.value){
+      slots.push({dia:parseInt(diaEl.value),hora:horaEl.value});
+    }
+  });
+  c.agenda=slots;
+  await persist();
+  openClient(cid);
+  toast('Horários salvos!');
+}
+function cardHTML(c){const a=age(c.birth);var tipoLabel=(c.tipo||'Presencial');var tipoClass=tipoLabel==='Presencial'?'tipo-p':'tipo-c';return `<div class="card" onclick="openClient('${c.id}')">
   <div class="row1"><span class="avatar">${initials(c.name)}</span><div><h3>${esc(c.name)}</h3><div class="sub">${a?a+' anos · ':''}${esc(c.level)}</div></div></div>
-  <div class="tags"><span class="tag goal">${esc((c.goal||'').split('(')[0].trim())}</span><span class="tag">${c.days}x/sem</span>${parqFlag(c)?'<span class="tag flag">⚠ PAR-Q</span>':''}</div>
+  <div class="tags"><span class="tag goal">${esc((c.goal||'').split('(')[0].trim())}</span><span class="tag">${c.days}x/sem</span><span class="tag ${tipoClass}">${tipoLabel}</span>${parqFlag(c)?'<span class="tag flag">⚠ PAR-Q</span>':''}</div>
   <div class="progs"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>${c.program?'Treino montado':'Sem treino ainda'}</div></div>`;}
 
 /* ============ Ficha — abas ============ */
@@ -3003,7 +3106,8 @@ function profileTabHTML(c){
       <div class="profile-grid">
       ${fv("Nome",c.name||"—")}${fv("E-mail",c.email||"—")}${fv("WhatsApp",wa?`<a href="${wa}" target="_blank">${esc(c.whats)}</a>`:(c.whats||"—"),true)}
       ${fv("Nascimento",c.birth?`${new Date(c.birth).toLocaleDateString('pt-BR')}${a?' ('+a+' anos)':''}`:"—")}
-      ${fv("Sexo",c.gender)}${fv("Altura",c.height?c.height+" cm":"—")}${fv("Peso",c.weight?c.weight+" kg":"—")}</div></div>
+      ${fv("Sexo",c.gender)}${fv("Altura",c.height?c.height+" cm":"—")}${fv("Peso",c.weight?c.weight+" kg":"—")}
+      ${fv("Tipo de atendimento",c.tipo||"Presencial")}</div></div>
     <div class="panel"><div class="panel-title"><span class="dot"></span>Objetivo e treino</div><div class="profile-grid">
       ${fv("Objetivo",c.goal)}${fv("Nível",c.level)}${fv("Frequência",c.days+"x / semana")}
       ${fv("Sessão",c.dur)}${fv("Equipamento",c.eq)}${fv("Experiência",c.experience||"—")}</div></div>
@@ -3021,7 +3125,35 @@ function profileTabHTML(c){
           <div class="fl"><label>Senha</label><input id="pt_pass" type="text" placeholder="mín. 4 caracteres"></div>
           <button class="btn accent sm" style="align-self:flex-end" onclick="enablePortal('${c.id}')">Ativar portal</button></div>`}
     </div>
+    ${(c.tipo||'Presencial')==='Presencial'?agendaPanelHTML(c):''}
     ${reminderPanelHTML(c)}`;
+}
+function agendaPanelHTML(c){
+  var DAYS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  var slots=(c.agenda||[]);
+  var slotRows=slots.map(function(sl,i){
+    return '<div class="agenda-edit-row">'
+      +'<select class="inp ag-dia" style="flex:none;min-width:108px">'
+      +'<option value="1"'+(sl.dia===1?' selected':'')+'>Segunda</option>'
+      +'<option value="2"'+(sl.dia===2?' selected':'')+'>Terça</option>'
+      +'<option value="3"'+(sl.dia===3?' selected':'')+'>Quarta</option>'
+      +'<option value="4"'+(sl.dia===4?' selected':'')+'>Quinta</option>'
+      +'<option value="5"'+(sl.dia===5?' selected':'')+'>Sexta</option>'
+      +'<option value="6"'+(sl.dia===6?' selected':'')+'>Sábado</option>'
+      +'<option value="0"'+(sl.dia===0?' selected':'')+'>Domingo</option>'
+      +'</select>'
+      +'<input type="time" class="inp ag-hora" value="'+esc(sl.hora||'07:00')+'" style="flex:none;width:110px">'
+      +'<button class="btn ghost sm" style="flex:none" onclick="this.closest(\'.agenda-edit-row\').remove()">✕</button>'
+      +'</div>';
+  }).join('');
+  return '<div class="panel" style="margin-top:14px">'
+    +'<div class="panel-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Horários de atendimento</div>'
+    +'<div class="ai-hint" style="margin-top:-6px;margin-bottom:12px">Defina os dias e horários fixos deste aluno. Aparece na Agenda do painel.</div>'
+    +'<div id="agendaRows">'+slotRows+'</div>'
+    +'<div class="ai-row" style="margin-top:10px;gap:8px">'
+    +'<button class="btn ghost sm" onclick="addAgendaRowUI()">+ Adicionar horário</button>'
+    +'<button class="btn accent sm" onclick="saveAgendaSlots(\''+c.id+'\')">Salvar horários</button>'
+    +'</div></div>';
 }
 function reminderPanelHTML(c){
   const rs=c.reminderSchedule||{enabled:false,days:[],time:"08:00"};
@@ -3126,6 +3258,7 @@ async function openClient(cid){
         <div class="tags" style="margin-top:8px">
           <span class="tag goal">${esc(cl.goal)}</span><span class="tag">${esc(cl.level)}</span>
           <span class="tag">${cl.days}x/sem · ${esc(cl.dur)}</span><span class="tag">${esc(cl.eq)}</span>
+          <span class="tag ${(cl.tipo||'Presencial')==='Presencial'?'tipo-p':'tipo-c'}">${cl.tipo||'Presencial'}</span>
           ${flag?'<span class="tag flag">⚠ PAR-Q positivo</span>':''}
           ${(cl.portal&&cl.portal.enabled)?'<span class="tag" style="color:var(--accent);border-color:rgba(200,242,80,.3)">Portal ativo</span>':''}
         </div>
@@ -3149,10 +3282,11 @@ async function openClient(cid){
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Msgs
         ${(cl.trainerChat||[]).some(m=>m.from==='student')?`<span class="tb-badge">!</span>`:''}
       </button>
-      <button class="trainer-tab ${trainerTab==='aulas'?'on':''}" onclick="setTrainerTab('aulas')">
+      ${(cl.tipo||'Presencial')==='Presencial'?`<button class="trainer-tab ${trainerTab==='aulas'?'on':''}" onclick="setTrainerTab('aulas')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>Aulas
         ${(()=>{const st=aulasStats(cl);return st.total&&st.pct>=100?'<span class="tb-badge" style="background:rgba(255,107,107,.2);color:var(--danger);border-color:rgba(255,107,107,.3)">full</span>':st.creditos>0?'<span class="tb-badge">'+st.creditos+' repo</span>':''})()}
-      </button>
+      </button>`:''}
+
     </div>
     <div id="trainerBody"></div>`;
   renderTrainerBody(cl);
@@ -4627,6 +4761,7 @@ function openModal(){
      <div class="fl"><label>WhatsApp</label><input id="f_whats" placeholder="(83) 99999-9999"></div>
      <div class="fl"><label>Data de nascimento</label><input id="f_birth" type="date"></div>
      <div class="fl"><label>Sexo</label><select id="f_gender"><option>Feminino</option><option>Masculino</option><option>Prefere não informar</option></select></div>
+     <div class="fl"><label>Tipo de atendimento</label><select id="f_tipo"><option>Presencial</option><option>Consultoria online</option></select></div>
      <div class="fl"><label>Altura (cm)</label><input id="f_height" type="number" placeholder="165"></div>
      <div class="fl"><label>Peso (kg)</label><input id="f_weight" type="number" placeholder="68"></div></div></div>
    <div class="form-section"><div class="sec-t">Objetivo e treino</div><div class="fgrid">
@@ -4676,6 +4811,7 @@ function openEditProfileModal(cid){
     +'<div class="fl"><label>Sexo</label><select id="ep_gender" class="inp"><option>Feminino</option><option>Masculino</option><option>Prefere não informar</option></select></div>'
     +'<div class="fl"><label>Altura (cm)</label><input id="ep_height" type="number" class="inp" value="'+esc(c.height||'')+'"></div>'
     +'<div class="fl"><label>Peso (kg)</label><input id="ep_weight" type="number" class="inp" value="'+esc(c.weight||'')+'"></div>'
+    +'<div class="fl"><label>Tipo de atendimento</label><select id="ep_tipo" class="inp">'+_sel(['Presencial','Consultoria online'],c.tipo||'Presencial')+'</select></div>'
     +'</div></div>'
     +'<div class="form-section"><div class="sec-t">Objetivo e treino</div><div class="fgrid">'
     +'<div class="fl"><label>Objetivo</label><select id="ep_goal" class="inp">'+_sel(["Ganho de massa (hipertrofia)","Perda de gordura","Força","Condicionamento / saúde","Performance esportiva","Reabilitação / volta ao treino"],c.goal)+'</select></div>'
@@ -4721,6 +4857,7 @@ async function saveEditProfile(cid){
   c.whats=(g('ep_whats')&&g('ep_whats').value.trim())||c.whats;
   c.birth=(g('ep_birth')&&g('ep_birth').value)||c.birth;
   c.gender=(g('ep_gender')&&g('ep_gender').value)||c.gender;
+  c.tipo=(g('ep_tipo')&&g('ep_tipo').value)||c.tipo||'Presencial';
   c.height=(g('ep_height')&&g('ep_height').value)||c.height;
   c.weight=(g('ep_weight')&&g('ep_weight').value)||c.weight;
   c.goal=(g('ep_goal')&&g('ep_goal').value)||c.goal;
@@ -4743,15 +4880,14 @@ async function saveEditProfile(cid){
     renderSidebar();
     openClient(cid);
     toast('Perfil atualizado!');
-  }catch(e){toast('Erro ao salvar ('+e.message+')');}
-}
+  }catch(e){toast('Erro ao salvar ('+e.message+')');}\n}
 async function saveClient(){
   const g=i=>document.getElementById(i);const name=g("f_name").value.trim();
   if(!name){g("errHint").textContent="Informe o nome.";g("f_name").focus();g("f_name").style.borderColor="var(--danger)";return;}
   const parq={};PARQ.forEach((q,i)=>{const s=document.querySelector(`input[name="parq${i}"]:checked`);parq[i]=s?s.value:"nao";});
   const diseases=[...document.querySelectorAll('input[name="dis"]:checked')].map(x=>x.value);
   const c={id:newId(),name,email:g("f_email").value.trim(),whats:g("f_whats").value.trim(),birth:g("f_birth").value,
-    gender:g("f_gender").value,height:g("f_height").value,weight:g("f_weight").value,
+    gender:g("f_gender").value,tipo:(g("f_tipo")&&g("f_tipo").value)||"Presencial",height:g("f_height").value,weight:g("f_weight").value,
     goal:g("f_goal").value,level:g("f_level").value,days:g("f_days").value,dur:g("f_dur").value,eq:g("f_eq").value,experience:g("f_exp").value,
     parq,diseases,meds:g("f_meds").value.trim(),surgery:g("f_surgery").value.trim(),smoke:g("f_smoke").value,sleep:g("f_sleep").value,
     inj:g("f_inj").value.trim(),notes:g("f_notes").value.trim(),program:null};
@@ -4776,7 +4912,7 @@ document.getElementById("overlay").addEventListener("click",e=>{if(e.target.id==
   trainers=await sget(TRAINERS_KEY)||[];
   const sess=await sget(SESSION_KEY);
   if(sess){
-    if(typeof sess==="string"){ const t=trainers.find(x=>x.id===sess); if(t){await startSession(t);return;} }
+    if(typeof sess==="string"){ const t=trainers.find(x=>x.id===sess); if(t){await startSession(t);return;} }      // sessão antiga (treinador)
     else if(sess.role==="trainer"){ const t=trainers.find(x=>x.id===sess.tid); if(t){await startSession(t);return;} }
     else if(sess.role==="student"){ await startStudentSession(sess.tid,sess.cid); if(sClient)return; }
   }
@@ -4903,11 +5039,13 @@ function pwaDismiss(){
     var chain=Promise.resolve();
     _q.forEach(function(x){
       chain=chain.then(function(){
+        /* Encontra o objeto cliente correto (pode ser sClient ou um dos clientes do treinador) */
         var target=(typeof sClient!=='undefined'&&sClient&&sClient.id===x.cid)?sClient:null;
         return sb.from('sessions')
           .upsert(sessionToRow(x.cid,x.s),{onConflict:'id'})
           .then(function(r){
             if(r.error)throw r.error;
+            /* Atualiza rpeLog local evitando duplicata */
             if(target){
               target.rpeLog=target.rpeLog||[];
               if(!target.rpeLog.some(function(e){return e.id===x.s.id;}))target.rpeLog.push(x.s);
@@ -4915,7 +5053,7 @@ function pwaDismiss(){
           })
           .catch(function(e){
             console.warn('[Nucleo sync] item falhou',x.s.id,e.message);
-            failed.push(x);
+            failed.push(x); /* mantém na fila para tentar de novo */
           });
       });
     });
@@ -4933,9 +5071,11 @@ function pwaDismiss(){
   window.addEventListener('online',function(){
     _updateOnline();
     if(typeof toast==='function')toast('Conexão restaurada!');
-    setTimeout(_nucleo_syncQ,1500);
+    setTimeout(_nucleo_syncQ,1500); /* pequeno delay para a conexão estabilizar */
   });
+  /* Tenta sync também ao iniciar online */
   window.addEventListener('load',function(){if(navigator.onLine)setTimeout(_nucleo_syncQ,3000);});
+  /* Checar ao carregar */
   if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded',_updateOnline);
   } else { _updateOnline(); }
