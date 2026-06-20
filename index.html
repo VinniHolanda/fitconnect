@@ -646,9 +646,13 @@
 .agenda-edit-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
 /* ── Section box alunos ───────────────────────────────── */
 .section-box{background:var(--surface);border:1px solid var(--line-soft);border-radius:var(--radius);padding:20px;margin-top:20px}
-.section-box-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.section-box-head{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;padding:4px 0}
 .section-box-head h3{font-size:15px;font-weight:700;color:var(--text)}
 .section-box-count{font-size:12px;color:var(--text-faint);background:var(--surface-2);border-radius:100px;padding:2px 9px;font-weight:700}
+.section-box-chevron{margin-left:auto;transition:transform .25s;color:var(--text-faint)}
+.section-box-head.open .section-box-chevron{transform:rotate(180deg)}
+.section-box-body{overflow:hidden;max-height:0;transition:max-height .3s ease}
+.section-box-body.open{max-height:9999px}
 .tag.tipo-p{background:rgba(200,242,80,.1);color:var(--accent);border-color:rgba(200,242,80,.2)}
 .tag.tipo-c{background:rgba(100,160,255,.1);color:#64a0ff;border-color:rgba(100,160,255,.2)}
 </style>
@@ -2858,7 +2862,7 @@ function goDashboard(){
     <div class="stat"><div class="n">${withProg}</div><div class="l">Com treino montado</div></div>
     <div class="stat"><div class="n" style="${flags?'color:var(--warn)':''}">${flags}</div><div class="l">Requerem atenção médica (PAR-Q)</div></div></div>
     ${inactivePanel}
-    ${clients.length?`<div class="section-box"><div class="section-box-head"><h3>Alunos cadastrados</h3><span class="section-box-count">${clients.length}</span></div><div class="grid">${clients.map(cardHTML).join("")}</div></div>`:emptyHTML()}`;
+    ${clients.length?`<div class="section-box"><div class="section-box-head" onclick="toggleSectionBox(this)" id="alunosBoxHead"><h3>Alunos cadastrados</h3><span class="section-box-count">${clients.length}</span><svg class="section-box-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div><div class="section-box-body" id="alunosBoxBody"><div class="grid" style="margin-top:16px">${clients.map(cardHTML).join("")}</div></div></div>`:emptyHTML()}`;
   /* Supabase: carrega datas de última sessão em background para popular o painel de inatividade */
   if(sb&&clients.length&&!Object.keys(_nucleo_lastDates).length){
     sb.from('sessions').select('client_id,date,checkin').then(function(r){
@@ -2880,6 +2884,11 @@ function goDashboard(){
   }
 }
 function emptyHTML(){return `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><div>Você ainda não cadastrou alunos.<br>Clique em <b style="color:var(--accent)">Novo aluno</b> para começar.</div></div>`;}
+function toggleSectionBox(head){
+  head.classList.toggle('open');
+  var body=document.getElementById('alunosBoxBody');
+  if(body)body.classList.toggle('open');
+}
 function parqFlag(c){return c.parq&&Object.values(c.parq).some(v=>v==="sim");}
 /* ============ Agenda ============ */
 function goAgenda(){
@@ -5062,23 +5071,4 @@ function pwaDismiss(){
       try{localStorage.setItem(_qkey,JSON.stringify(failed));}catch(e){}
       var synced=_q.length-failed.length;
       if(synced>0){
-        if(typeof renderStudentHome==='function')renderStudentHome();
-        if(typeof toast==='function')toast(synced+' treino(s) sincronizado(s) com a nuvem!');
-      }
-      _updateOfflineBadge();
-      _syncLock=false;
-    }).catch(function(){_syncLock=false;});
-  }
-  window.addEventListener('online',function(){
-    _updateOnline();
-    if(typeof toast==='function')toast('Conexão restaurada!');
-    setTimeout(_nucleo_syncQ,1500); /* pequeno delay para a conexão estabilizar */
-  });
-  /* Tenta sync também ao iniciar online */
-  window.addEventListener('load',function(){if(navigator.onLine)setTimeout(_nucleo_syncQ,3000);});
-  /* Checar ao carregar */
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',_updateOnline);
-  } else { _updateOnline(); }
-})();
-</script>
+        if(typeof renderStudentHome==='functi
