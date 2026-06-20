@@ -4404,31 +4404,28 @@ function buildProgressReport(c, log){
     return{label:"S"+(i+1),phase:w.f,ton,n:ss.length};
   });
   const _maxTon=Math.max(..._wkTon.map(w=>w.ton),1);
-  const _tonCards=_wkTon.map(w=>{
-    const pct=Math.round(w.ton/_maxTon*100);
-    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:70px">
-      <div style="font-size:11px;font-weight:800;color:${w.ton>0?'var(--accent)':'var(--text-faint)'}">${w.ton>0?w.ton.toLocaleString('pt-BR')+' kg':'—'}</div>
-      <div style="width:100%;background:var(--line-soft);border-radius:5px;height:56px;display:flex;align-items:flex-end;overflow:hidden">
-        <div style="width:100%;height:${w.ton>0?pct:2}%;background:${w.ton>0?'var(--accent)':'var(--line)'};border-radius:5px"></div>
-      </div>
-      <div style="font-size:12px;font-weight:700;color:var(--text-dim)">${w.label}</div>
-      <div style="font-size:9.5px;color:var(--text-faint);text-align:center">${esc(w.phase.substring(0,14))}</div>
-      <div style="font-size:9.5px;color:var(--text-faint)">${w.n>0?w.n+' sess.':''}</div>
-    </div>`;
-  }).join("");
   const _hasWkTon=_wkTon.some(w=>w.ton>0);
-  const _wkTonHTML=_hasWkTon?`<div class="panel" style="margin-top:14px">
-    <div class="panel-title"><span class="dot"></span>Carga total por semana (tonelagem)</div>
-    <div class="ai-hint" style="margin-top:-6px;margin-bottom:14px">Soma de toda a tonelagem registrada em cada semana do mesociclo (séries × reps × kg).</div>
-    <div style="display:flex;gap:10px;align-items:flex-end;padding:4px 0 10px">${_tonCards}</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
-      ${_wkTon.filter(w=>w.ton>0).map(w=>`<div style="background:var(--surface-2);border-radius:9px;padding:8px 14px;flex:1;min-width:100px">
-        <div style="font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em">${w.label} total</div>
-        <div style="font-size:20px;font-weight:800;color:var(--accent);margin-top:3px">${w.ton.toLocaleString('pt-BR')}</div>
-        <div style="font-size:11px;color:var(--text-faint)">${w.n} sessão(ões)</div>
-      </div>`).join("")}
-    </div>
-  </div>`:"";
+  const _wkTonHTML=_hasWkTon?(function(){
+    var rows=_wkTon.map(function(w){
+      var pct=Math.round(w.ton/_maxTon*100);
+      var barCol=w.ton>0?'var(--accent)':'var(--line)';
+      var tonTxt=w.ton>0?w.ton.toLocaleString('pt-BR')+' kg':'\u2014';
+      var tonCol=w.ton>0?'var(--accent)':'var(--text-faint)';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line-soft)">'
+        +'<span style="font-size:12px;font-weight:700;color:var(--text-dim);min-width:24px">'+w.label+'</span>'
+        +'<span style="font-size:10px;color:var(--text-faint);min-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(w.phase.substring(0,18))+'</span>'
+        +'<div style="flex:1;height:14px;background:var(--line-soft);border-radius:4px;overflow:hidden">'
+        +'<div style="height:100%;width:'+pct+'%;background:'+barCol+';border-radius:4px;transition:width .4s"></div>'
+        +'</div>'
+        +'<span style="font-size:12px;font-weight:800;color:'+tonCol+';min-width:80px;text-align:right">'+tonTxt+'</span>'
+        +(w.n>0?'<span style="font-size:10px;color:var(--text-faint);min-width:48px;text-align:right">'+w.n+'sess.</span>':'')
+        +'</div>';
+    }).join('');
+    return '<div class="panel" style="margin-top:14px">'
+      +'<div class="panel-title"><span class="dot"></span>Carga por semana (tonelagem)</div>'
+      +'<div style="margin-top:6px">'+rows+'</div>'
+      +'</div>';
+  })():"";
   return adherHTML + _wkTonHTML + (rmSeries.length?'<div class="panel" style="margin-top:14px;padding-bottom:4px">'
     +'<div class="panel-title"><span class="dot"></span>1RM estimado por exercício</div>'
     +'<div style="margin-top:2px">'+rmCards+'</div>'
