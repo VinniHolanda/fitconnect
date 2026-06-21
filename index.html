@@ -546,6 +546,24 @@
 .cardio-card-name{font-size:15px;font-weight:800;color:var(--text)}
 .cardio-science-txt{font-size:10px;color:var(--text-faint);font-style:italic;margin-bottom:10px;line-height:1.45}
 .cardio-tip-box{background:rgba(200,242,80,.06);border-radius:7px;padding:7px 10px;font-size:11px;color:var(--text-faint);margin:8px 0;line-height:1.5}
+/* ── Cardio UI v2 — compact editor + beautiful protocol ── */
+.cardio-ed-hd{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line-soft)}
+.cardio-method-icon{font-size:20px;flex-shrink:0}
+.cardio-timeline{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px;margin-bottom:10px}
+.cardio-timeline-seg{border-radius:4px;transition:flex .3s}
+.dot-c-warm{background:rgba(200,242,80,.5)}
+.dot-c-work{background:#c8f250}
+.dot-c-rest{background:rgba(255,255,255,.15)}
+.dot-c-cool{background:rgba(200,242,80,.2)}
+.cardio-phase-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line-soft)}
+.cardio-phase-row:last-child{border-bottom:none}
+.cardio-phase-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cardio-phase-name{font-size:11px;font-weight:700;color:var(--text);flex:1}
+.cardio-phase-time{font-size:11px;color:var(--text);font-weight:800;min-width:90px;text-align:right}
+.cardio-phase-bpm{font-size:10px;color:var(--text-faint);min-width:70px;text-align:right}
+.cardio-ref-compact{font-size:9.5px;color:var(--text-faint);margin-top:8px;font-style:italic;line-height:1.45}
+.cardio-obs-row{margin-top:8px}
+.cardio-obs-in{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:5px 8px;font-size:12px;color:var(--text);box-sizing:border-box}
 .set-row-v2{display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--surface-3,rgba(255,255,255,.04));border-radius:8px}
 .set-chip{width:20px;height:20px;border-radius:6px;background:var(--accent);color:#000;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .set-chip.done-chip{background:rgba(200,242,80,.25);color:var(--accent)}
@@ -5152,25 +5170,42 @@ function _buildCardioSectionInner(di){
     var m=CARDIO_METHODS[s.method]||CARDIO_METHODS.hiit;
     var methodSel='<select class="cardio-method-sel" onchange="onCardioChange('+di+',\''+s.id+'\',\'method\',this.value)">'
       +Object.entries(CARDIO_METHODS).map(function(e){return'<option value="'+e[0]+'"'+(s.method===e[0]?' selected':'')+'>'+e[1].icon+' '+e[1].name+'</option>';}).join('')+'</select>';
-    var fieldsHTML=m.fields.map(function(f){
+    var fieldsHTML='<div class="cardio-fields">'+m.fields.map(function(f){
       var v=s.params[f.k]!==undefined?s.params[f.k]:f.def;
       return'<div class="cardio-fld"><label>'+f.l+'</label><input type="'+f.type+'" value="'+String(v).replace(/"/g,'&quot;')+'" style="width:'+f.w+'px" oninput="onCardioChange('+di+',\''+s.id+'\',\''+f.k+'\',this.value)"></div>';
-    }).join('');
+    }).join('')+'</div>';
     var proto=m.proto(s.params);
-    var protoHTML=proto.map(function(p){
-      return'<div class="cardio-proto-row"><span class="cardio-proto-phase">'+p.phase+'</span><div class="cardio-proto-bar '+p.cls+'" style="width:'+Math.max(4,Math.round(p.pct*100))+'%"></div><span class="cardio-proto-time">'+p.time+'</span><span class="cardio-proto-bpm">'+p.bpm+'</span></div>';
+    /* Timeline bar horizontal */
+    var totalPct=proto.reduce(function(sum,p){return sum+Math.max(0.05,p.pct);},0);
+    var timelineHTML='<div class="cardio-timeline">'+proto.map(function(p){
+      var flex=Math.max(0.05,p.pct)/totalPct;
+      return'<div class="cardio-timeline-seg '+p.cls.replace('bar-c-','dot-c-')+'" style="flex:'+flex.toFixed(3)+'"></div>';
+    }).join('')+'</div>';
+    /* Phase rows */
+    var dotMap={'bar-c-warm':'dot-c-warm','bar-c-work':'dot-c-work','bar-c-rest':'dot-c-rest','bar-c-cool':'dot-c-cool'};
+    var phaseRowsHTML=proto.map(function(p){
+      return'<div class="cardio-phase-row">'
+        +'<div class="cardio-phase-dot '+(dotMap[p.cls]||'dot-c-rest')+'"></div>'
+        +'<span class="cardio-phase-name">'+p.phase+'</span>'
+        +'<span class="cardio-phase-time">'+p.time+'</span>'
+        +(p.bpm?'<span class="cardio-phase-bpm">'+p.bpm+'</span>':'')
+        +'</div>';
     }).join('');
-    var obsInput='<div style="margin-top:8px"><label style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint)">Obs. para o aluno</label>'
-      +'<input type="text" style="width:100%;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:4px 8px;font-size:12px;color:var(--text);margin-top:3px;box-sizing:border-box" value="'+(s.notes||'').replace(/"/g,'&quot;')+'" placeholder="Pace alvo, equipamento, orientacoes..." oninput="onCardioChange('+di+',\''+s.id+'\',\'notes\',this.value)"></div>';
+    var protoHTML='<div class="cardio-proto-block"><div class="cardio-proto-lbl">Protocolo</div>'
+      +timelineHTML+phaseRowsHTML+'</div>';
+    var refHTML='<div class="cardio-ref-compact">&#128218; '+m.science+'</div>';
+    var obsHTML='<div class="cardio-obs-row"><input type="text" class="cardio-obs-in" value="'+(s.notes||'').replace(/"/g,'&quot;')+'" placeholder="Pace alvo, equipamento, orientacoes..." oninput="onCardioChange('+di+',\''+s.id+'\',\'notes\',this.value)"></div>';
     return'<div class="cardio-session-ed">'
-      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
-      +'<span style="font-size:18px">'+m.icon+'</span>'+methodSel
+      +'<div class="cardio-ed-hd">'
+      +'<span class="cardio-method-icon">'+m.icon+'</span>'
+      +methodSel
       +'<button class="cardio-del-btn" onclick="deleteCardioSession('+di+',\''+s.id+'\')" title="Remover">&#x2715;</button>'
       +'</div>'
-      +'<div class="cardio-fields">'+fieldsHTML+'</div>'
-      +'<div class="cardio-proto-block"><div class="cardio-proto-lbl">Protocolo</div>'+protoHTML+'</div>'
-      +'<div class="cardio-ref">&#128218; '+m.science+'</div>'
-      +obsInput+'</div>';
+      +fieldsHTML
+      +protoHTML
+      +refHTML
+      +obsHTML
+      +'</div>';
   }).join('');
   html+='<button class="prep-tag-btn" onclick="addCardioSession('+di+')" style="background:rgba(200,242,80,.06);border-color:rgba(200,242,80,.3);color:#c8f250;margin-top:4px">&#127939; + Sessao Cardio / HIIT</button>';
   return html;
