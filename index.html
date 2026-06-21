@@ -2114,7 +2114,7 @@ function buildExCard(ex,i){
       +ex.prepSets.map((p,pi)=>'<div class="prep-row-v2"><span class="prep-chip">A'+(pi+1)+'</span><span class="prep-info">'+(p.load?esc(p.load)+' &nbsp;·&nbsp; ':'')+esc(p.reps||'—')+' reps</span>'+(p.note?'<span class="prep-note-txt">'+esc(p.note)+'</span>':'')+'</div>').join('')
       +'</div>'
     :'';
-  return '<div class="ex-card-v2"+(done?' done':isNext?' active':'')+'">'
+  return '<div class="ex-card-v2'+(done?' done':isNext?' active':'')+'">'
     +'<div class="ex-hd-v2"><div class="ex-hd-left">'
     +'<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'
     +'<span class="ex-nm-v2">'+esc(ex.name)+'</span>'
