@@ -516,6 +516,36 @@
 .prep-chip{width:26px;height:26px;border-radius:6px;background:rgba(255,198,88,.15);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--warn);flex-shrink:0}
 .prep-info{font-size:13px;font-weight:700;color:var(--text);flex:1}
 .prep-note-txt{font-size:11px;color:var(--text-faint)}
+/* ===== Módulo Cardio / HIIT / Corrida ===== */
+.cardio-section{margin-top:14px;border-top:1px solid rgba(200,242,80,.12);padding-top:12px}
+.cardio-section-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#c8f250;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.cardio-session-ed{background:rgba(200,242,80,.04);border:1px solid rgba(200,242,80,.18);border-radius:10px;padding:12px;margin-bottom:8px}
+.cardio-method-sel{background:var(--surface);border:1px solid rgba(200,242,80,.3);border-radius:7px;padding:4px 8px;color:var(--text);font-size:12px;font-weight:700;cursor:pointer}
+.cardio-fields{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
+.cardio-fld{display:flex;flex-direction:column;gap:3px}
+.cardio-fld label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint)}
+.cardio-fld input,.cardio-fld select{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:4px 8px;font-size:12px;color:var(--text)}
+.cardio-ref{font-size:10px;color:var(--text-faint);margin-top:8px;font-style:italic;border-top:1px solid var(--line-soft);padding-top:6px;line-height:1.45}
+.cardio-del-btn{background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:13px;padding:2px 6px;margin-left:auto}
+.cardio-proto-block{background:var(--surface);border-radius:8px;padding:8px 12px;margin-top:10px}
+.cardio-proto-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#c8f250;margin-bottom:7px}
+.cardio-proto-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--line-soft)}
+.cardio-proto-row:last-child{border-bottom:none}
+.cardio-proto-phase{font-size:11px;font-weight:700;color:var(--text-faint);width:110px;flex-shrink:0}
+.cardio-proto-bar{height:5px;border-radius:3px;flex:1;min-width:4px}
+.cardio-proto-time{font-size:11px;color:var(--text);width:120px;text-align:right;font-weight:700}
+.cardio-proto-bpm{font-size:10px;color:var(--text-faint);width:75px;text-align:right}
+.bar-c-warm{background:rgba(200,242,80,.3)}
+.bar-c-work{background:#c8f250}
+.bar-c-rest{background:rgba(255,255,255,.08)}
+.bar-c-cool{background:rgba(200,242,80,.12)}
+.cardio-card-v2{background:rgba(200,242,80,.04);border:1px solid rgba(200,242,80,.22);border-radius:12px;padding:14px;margin-bottom:10px}
+.cardio-card-v2.done{opacity:.65;border-color:rgba(200,242,80,.08)}
+.cardio-card-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.cardio-badge{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;background:rgba(200,242,80,.12);color:#c8f250;border-radius:6px;padding:3px 8px}
+.cardio-card-name{font-size:15px;font-weight:800;color:var(--text)}
+.cardio-science-txt{font-size:10px;color:var(--text-faint);font-style:italic;margin-bottom:10px;line-height:1.45}
+.cardio-tip-box{background:rgba(200,242,80,.06);border-radius:7px;padding:7px 10px;font-size:11px;color:var(--text-faint);margin:8px 0;line-height:1.5}
 .set-row-v2{display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--surface-3,rgba(255,255,255,.04));border-radius:8px}
 .set-chip{width:20px;height:20px;border-radius:6px;background:var(--accent);color:#000;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .set-chip.done-chip{background:rgba(200,242,80,.25);color:var(--accent)}
@@ -1798,6 +1828,7 @@ function stuStartSession(){
   });
   /* Wellness registrado — não reduz volume automaticamente.
      Se score baixo, notificação vai ao treinador ao finalizar a sessão. */
+  stuCardioLog=(day.cardioSessions||[]).map(function(cs){return Object.assign({},cs,{done:false});});
   stuVolumeAdj=null; // mantido para compatibilidade mas não usado para redução
   _sessStartTs=Date.now();
   stuInSession=true;stuFinishing=false;renderStudentHome();
@@ -1938,7 +1969,7 @@ function renderStuCards(){
     const gEx=acts[stuGuidedIdx];
     if(gEx){const gI=stuExLog.indexOf(gEx);el.innerHTML=buildGuidedCard(gEx,gI);}
   } else {
-    el.innerHTML=stuExLog.map((ex,i)=>buildExCard(ex,i)).join("");
+    el.innerHTML=stuExLog.map((ex,i)=>buildExCard(ex,i)).join("")+(stuCardioLog.length?'<div style="margin-top:6px">'+stuCardioLog.map((cs,i)=>buildCardioCard(cs,i)).join('')+'</div>':''  );
   }
 }
 
@@ -2303,7 +2334,7 @@ function renderStudentHome(){
       +(stuVolumeAdj?'<div class="vol-adj-banner">⚡ Volume reduzido em '+Math.round((1-stuVolumeAdj)*100)+'% — prontidão: '+stuWellness.score+'% (sono '+stuWellness.sleep+' · dor '+stuWellness.soreness+' · energia '+stuWellness.energy+')</div>':'')
       +'</div>'
       +'<div id="stuTonGauge">'+buildTonGauge(totalTon,limit)+'</div>'
-      +'<div id="stuCards">'+stuExLog.map((ex,i)=>buildExCard(ex,i)).join('')+'</div>'
+      +'<div id="stuCards">'+stuExLog.map((ex,i)=>buildExCard(ex,i)).join('')+(stuCardioLog.length?'<div style="margin-top:6px">'+stuCardioLog.map((cs,i)=>buildCardioCard(cs,i)).join('')+'</div>':'')+'</div>'
       +'<div class="session-acts">'
       +'<button class="btn accent" onclick="stuGoFinish()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Finalizar sessão</button>'
       +'<button class="btn ghost" onclick="stuToggleGuided()" title="Modo guiado: um exercício por vez">'+(stuGuided?'≡ Ver todos':'▦ Modo guiado')+'</button>'
@@ -3610,7 +3641,7 @@ function editableDaysHTML(p){
         <button class="row-x" title="Séries preparatórias" onclick="togglePrepPanel(${di},${ei})" style="color:var(--warn)">🔥</button>
         <button class="row-x" title="Remover" onclick="delEx(${di},${ei})">✕</button>
       </td></tr><tr id="preprow_${di}_${ei}" style="display:${(ex.prepSets&&ex.prepSets.length)?'table-row':'none'}"><td colspan="8" style="padding:0 8px 8px"><div class="prep-editor" id="prepeditor_${di}_${ei}"><div class="prep-editor-head">🔥 Séries preparatórias</div>${buildPrepEditorRows(di,ei,ex.prepSets||[])}<button class="prep-tag-btn" onclick="addPrepSet(${di},${ei})" style="margin-top:6px">+ Série prep.</button></div></td></tr>`).join("")}</tbody></table>
-    <div class="day-foot"><button class="btn ghost sm" onclick="addEx(${di})">+ Exercício</button></div></div>`).join("");
+    <div class="day-foot"><button class="btn ghost sm" onclick="addEx(${di})">+ Exercício</button></div>${buildCardioSectionHTML(di)}</div>`).join("");
 }
 function moveEx(di,ei,dir){
   var c=curProg();if(!c)return;
@@ -4983,6 +5014,196 @@ function onPrepChange(di,ei,pi,key,val){
   ex.prepSets[pi][key]=val;
   scheduleSave();
 }
+/* ============ Módulo Cardio / HIIT / Corrida ============ */
+const CARDIO_METHODS={
+  tabata:{
+    name:'Tabata',icon:'🔥',
+    science:'Tabata I. et al. (1996) Med & Sci in Sports: 8x20s/10s a 170% VO2max — ganhos SIMULTÂNEOS em VO2max e capacidade anaeróbica em apenas 4 min de trabalho efetivo. O grupo controle (60 min moderado) só melhorou a via aeróbica.',
+    tip:'Esforço MÁXIMO em cada rodada. Se completar 8 sem queda de rendimento, intensidade insuficiente. FC deve atingir 95-100% nos ultimos 10s de cada esforço.',
+    fields:[{k:'rounds',l:'Rodadas',def:8,type:'number',w:60},{k:'workSec',l:'Esforço (s)',def:20,type:'number',w:75},{k:'restSec',l:'Pausa (s)',def:10,type:'number',w:75},{k:'warmupMin',l:'Aquec. (min)',def:10,type:'number',w:75},{k:'cooldownMin',l:'Volta calma (min)',def:6,type:'number',w:90}],
+    proto(p){return[
+      {phase:'Aquecimento',time:(p.warmupMin||10)+' min',pct:0.22,cls:'bar-c-warm',bpm:'60-70% FC'},
+      {phase:(p.rounds||8)+'x esforço MAX',time:(p.workSec||20)+'s on / '+(p.restSec||10)+'s off',pct:1.0,cls:'bar-c-work',bpm:'95-100% FC'},
+      {phase:'Volta a calma',time:(p.cooldownMin||6)+' min',pct:0.15,cls:'bar-c-cool',bpm:'50-60% FC'},
+    ];}
+  },
+  hiit:{
+    name:'HIIT',icon:'⚡',
+    science:'Gibala & McGee (2012) J Physiology + meta-analise (65 estudos, 2022): HIIT a 85-95% FC max melhora VO2max 4-8% em 6 semanas em treinados e ate 15% em sedentarios. Superior ao continuo moderado para composicao corporal e sensibilidade a insulina.',
+    tip:'FC deve atingir a zona-alvo nos primeiros 60s de cada esforco. Relacao trabalho:descanso 1:2 para iniciantes, 1:1 para intermediarios. Recuperacao ATIVA — trote leve, nunca parado.',
+    fields:[{k:'sets',l:'Series',def:6,type:'number',w:60},{k:'workMin',l:'Esforco (min)',def:2,type:'number',w:80},{k:'restMin',l:'Descanso (min)',def:2,type:'number',w:80},{k:'hrPct',l:'Zona FC alvo',def:'85-95%',type:'text',w:85},{k:'warmupMin',l:'Aquec. (min)',def:10,type:'number',w:75},{k:'cooldownMin',l:'Volta calma (min)',def:8,type:'number',w:90}],
+    proto(p){return[
+      {phase:'Aquecimento',time:(p.warmupMin||10)+' min',pct:0.22,cls:'bar-c-warm',bpm:'60-70% FC'},
+      {phase:(p.sets||6)+'x esforco',time:(p.workMin||2)+' min',pct:0.9,cls:'bar-c-work',bpm:(p.hrPct||'85-95')+'% FC'},
+      {phase:'Recuperacao ativa',time:(p.restMin||2)+' min',pct:0.3,cls:'bar-c-rest',bpm:'60-65% FC'},
+      {phase:'Volta a calma',time:(p.cooldownMin||8)+' min',pct:0.15,cls:'bar-c-cool',bpm:'50-60% FC'},
+    ];}
+  },
+  fartlek:{
+    name:'Fartlek',icon:'🌊',
+    science:'Desenvolvido por Gosta Holmer (Suecia, 1937). Billat V. (2001) Eur J Applied Physiology: variacao de ritmo livre produz adaptacoes aerobicas similares ao intervalado estruturado com menor percepcao de esforco — ideal para iniciantes no speedwork e atletas em base.',
+    tip:'Acelere por percepcao ou marcos naturais (postes, arvores) — sem pace de relogio. Perfeito para parques e pistas de terra. A variacao E o treino.',
+    fields:[{k:'totalMin',l:'Total (min)',def:40,type:'number',w:70},{k:'surges',l:'Aceleracoes',def:10,type:'number',w:80},{k:'surgeMin',l:'Acelerac. (min)',def:1,type:'number',w:90},{k:'recMin',l:'Rec. (min)',def:2,type:'number',w:80}],
+    proto(p){return[
+      {phase:'Aquecimento',time:'10 min',pct:0.2,cls:'bar-c-warm',bpm:'60-65% FC'},
+      {phase:(p.surges||10)+'x aceleracao',time:(p.surgeMin||1)+' min',pct:0.75,cls:'bar-c-work',bpm:'75-85% FC'},
+      {phase:'Recuperacao',time:(p.recMin||2)+' min',pct:0.25,cls:'bar-c-rest',bpm:'65-70% FC'},
+      {phase:'Volta a calma',time:'10 min',pct:0.15,cls:'bar-c-cool',bpm:'55-60% FC'},
+    ];}
+  },
+  intervalado:{
+    name:'Intervalado Classico',icon:'🔁',
+    science:'Billat V. (2000) Sports Medicine: 800m repeats a ritmo de 5km sao o ponto otimo para VO2max — volume suficiente para estressar o teto aerobico, curtos o suficiente para manter qualidade. 6-12 semanas = melhora de 5-10% no VO2max. Metodo mais pesquisado em corredores de 5-10km.',
+    tip:'Descanso ATIVO — trote leve, nunca parado. Mantém fluxo sanguineo e acelera remocao de lactato. Cada repeticao deve comecar com a mesma capacidade da anterior.',
+    fields:[{k:'reps',l:'Repeticoes',def:6,type:'number',w:70},{k:'dist',l:'Distancia',def:'800m',type:'text',w:80},{k:'restMin',l:'Descanso (min)',def:3,type:'number',w:80},{k:'pace',l:'Ritmo alvo',def:'ritmo de prova 5km',type:'text',w:140},{k:'warmupMin',l:'Aquec. (min)',def:15,type:'number',w:75}],
+    proto(p){return[
+      {phase:'Aquecimento',time:(p.warmupMin||15)+' min',pct:0.22,cls:'bar-c-warm',bpm:'60-70% FC'},
+      {phase:(p.reps||6)+'x '+(p.dist||'800m'),time:p.pace||'ritmo de prova',pct:0.95,cls:'bar-c-work',bpm:'85-95% FC'},
+      {phase:'Trote de descanso',time:(p.restMin||3)+' min',pct:0.3,cls:'bar-c-rest',bpm:'65-70% FC'},
+      {phase:'Volta a calma',time:'10 min',pct:0.15,cls:'bar-c-cool',bpm:'55-60% FC'},
+    ];}
+  },
+  tempo:{
+    name:'Tempo / Limiar',icon:'🎯',
+    science:'Jack Daniels — Daniels Running Formula (3a ed. 2014): cruise intervals acumulam 50% mais volume no limiar de lactato vs. corrida continua ao mesmo esforco. O limiar de lactato e o maior preditor de performance em provas de 10km a maratona.',
+    tip:'"Confortavelmente dificil" — consegue falar algumas palavras mas nao manter conversa. FC na Zona 4 (85-90%). Treino mais eficiente para meia e maratona.',
+    fields:[{k:'intervals',l:'Intervalos',def:3,type:'number',w:70},{k:'intervalMin',l:'Duracao (min)',def:10,type:'number',w:80},{k:'restSec',l:'Descanso (s)',def:90,type:'number',w:80},{k:'warmupMin',l:'Aquec. (min)',def:15,type:'number',w:75},{k:'cooldownMin',l:'Volta calma (min)',def:10,type:'number',w:90}],
+    proto(p){return[
+      {phase:'Aquecimento',time:(p.warmupMin||15)+' min',pct:0.22,cls:'bar-c-warm',bpm:'60-70% FC'},
+      {phase:(p.intervals||3)+'x tempo',time:(p.intervalMin||10)+' min',pct:0.85,cls:'bar-c-work',bpm:'85-90% FC'},
+      {phase:'Descanso curto',time:(p.restSec||90)+'s',pct:0.3,cls:'bar-c-rest',bpm:'65-70% FC'},
+      {phase:'Volta a calma',time:(p.cooldownMin||10)+' min',pct:0.15,cls:'bar-c-cool',bpm:'55-60% FC'},
+    ];}
+  },
+  continuo:{
+    name:'Corrida Continua',icon:'🏃',
+    science:'Seiler S. (2010) Int J Sports Physiology & Performance: atletas de elite alocam 80% do volume em Zona 1-2 (base aerobica). O longao semanal e universal em todos os protocolos de corrida. Regra dos 10%: aumento maximo de volume por semana para evitar overuse.',
+    tip:'Ritmo de conversa — consegue falar frases completas. Construcao da base aerobica. Aumente no maximo 10% de distancia por semana.',
+    fields:[{k:'durationMin',l:'Duracao (min)',def:35,type:'number',w:90},{k:'intensity',l:'Intensidade',def:'leve-moderado',type:'text',w:120},{k:'warmupMin',l:'Aquec. (min)',def:5,type:'number',w:75},{k:'cooldownMin',l:'Volta calma (min)',def:5,type:'number',w:90}],
+    proto(p){return[
+      {phase:'Aquecimento',time:(p.warmupMin||5)+' min',pct:0.18,cls:'bar-c-warm',bpm:'60-65% FC'},
+      {phase:'Corrida continua',time:(p.durationMin||35)+' min',pct:0.7,cls:'bar-c-work',bpm:'70-80% FC'},
+      {phase:'Volta a calma',time:(p.cooldownMin||5)+' min',pct:0.15,cls:'bar-c-cool',bpm:'55-60% FC'},
+    ];}
+  },
+  billat:{
+    name:'Billat 30/30',icon:'⏱',
+    science:'Billat V. et al. (2000) Med & Sci in Sports Exercise: 30s em ritmo de 1 milha / 30s trote maximiza tempo acumulado em VO2max por sessao com significativamente menos fadiga que intervalados classicos. Permite alta frequencia semanal sem comprometer recuperacao.',
+    tip:'Ritmo de esforco: pace de 1 milha atual (mais rapido que 5km). Trote de recuperacao: minimo 2x mais lento. Sessao continua — sem parada entre repeticoes.',
+    fields:[{k:'reps',l:'Repeticoes',def:15,type:'number',w:80},{k:'workSec',l:'Esforco (s)',def:30,type:'number',w:80},{k:'restSec',l:'Pausa (s)',def:30,type:'number',w:80},{k:'warmupMin',l:'Aquec. (min)',def:15,type:'number',w:75},{k:'cooldownMin',l:'Volta calma (min)',def:10,type:'number',w:90}],
+    proto(p){return[
+      {phase:'Aquecimento',time:(p.warmupMin||15)+' min',pct:0.22,cls:'bar-c-warm',bpm:'60-70% FC'},
+      {phase:(p.reps||15)+'x 30s rapido',time:'ritmo de 1 milha',pct:0.95,cls:'bar-c-work',bpm:'90-95% FC'},
+      {phase:(p.reps||15)+'x 30s trote',time:'muito leve',pct:0.3,cls:'bar-c-rest',bpm:'65-70% FC'},
+      {phase:'Volta a calma',time:(p.cooldownMin||10)+' min',pct:0.15,cls:'bar-c-cool',bpm:'55-60% FC'},
+    ];}
+  },
+  piramide:{
+    name:'Piramide',icon:'📐',
+    science:'McMillan G. (2014) "You (Only Faster)": piramides recrutam fibras rapidas nos segmentos curtos e fibras oxidativas nos longos, simulando variacoes de ritmo de prova. A descida e o maior estimulo neuromuscular — velocidade sob fadiga.',
+    tip:'A DESCIDA e a parte mais valiosa — mantenha ritmo quando o corpo pede desaceleracao. Volume total: 3600-4800m de qualidade. Descanso = metade da distancia percorrida.',
+    fields:[{k:'sequence',l:'Sequencia (m)',def:'200,400,600,800,600,400,200',type:'text',w:180},{k:'pace',l:'Ritmo alvo',def:'esforco de prova 5km',type:'text',w:150},{k:'warmupMin',l:'Aquec. (min)',def:15,type:'number',w:75},{k:'cooldownMin',l:'Volta calma (min)',def:10,type:'number',w:90}],
+    proto(p){return[
+      {phase:'Aquecimento',time:(p.warmupMin||15)+' min',pct:0.22,cls:'bar-c-warm',bpm:'60-70% FC'},
+      {phase:'Subida',time:'200 -> pico',pct:0.85,cls:'bar-c-work',bpm:'85-90% FC'},
+      {phase:'Descida',time:'pico -> 200m',pct:0.88,cls:'bar-c-work',bpm:'85-93% FC'},
+      {phase:'Descanso ativo',time:'prop. distancia',pct:0.3,cls:'bar-c-rest',bpm:'65-70% FC'},
+      {phase:'Volta a calma',time:(p.cooldownMin||10)+' min',pct:0.15,cls:'bar-c-cool',bpm:'55-60% FC'},
+    ];}
+  },
+};
+
+let stuCardioLog=[];
+
+function addCardioSession(di){
+  var c=curProg();if(!c)return;
+  var d=c.program.days[di];
+  if(!d.cardioSessions)d.cardioSessions=[];
+  d.cardioSessions.push({id:newId(),method:'hiit',params:{},notes:''});
+  persist();
+  _refreshCardioSection(di);
+}
+function deleteCardioSession(di,sid){
+  var c=curProg();if(!c)return;
+  var d=c.program.days[di];
+  if(!d.cardioSessions)return;
+  d.cardioSessions=d.cardioSessions.filter(function(s){return s.id!==sid;});
+  persist();
+  _refreshCardioSection(di);
+}
+function onCardioChange(di,sid,key,val){
+  var c=curProg();if(!c)return;
+  var s=(c.program.days[di].cardioSessions||[]).find(function(x){return x.id===sid;});
+  if(!s)return;
+  if(key==='method'){s.method=val;s.params={};}
+  else if(key==='notes'){s.notes=val;}
+  else{s.params[key]=val;}
+  scheduleSave();
+  if(key==='method')_refreshCardioSection(di);
+}
+function _refreshCardioSection(di){
+  var el=document.getElementById('cardio_sec_'+di);
+  if(el)el.innerHTML=_buildCardioSectionInner(di);
+}
+function _buildCardioSectionInner(di){
+  var c=curProg();if(!c)return'';
+  var sessions=(c.program.days[di].cardioSessions)||[];
+  var html=sessions.map(function(s){
+    var m=CARDIO_METHODS[s.method]||CARDIO_METHODS.hiit;
+    var methodSel='<select class="cardio-method-sel" onchange="onCardioChange('+di+',\''+s.id+'\',\'method\',this.value)">'
+      +Object.entries(CARDIO_METHODS).map(function(e){return'<option value="'+e[0]+'"'+(s.method===e[0]?' selected':'')+'>'+e[1].icon+' '+e[1].name+'</option>';}).join('')+'</select>';
+    var fieldsHTML=m.fields.map(function(f){
+      var v=s.params[f.k]!==undefined?s.params[f.k]:f.def;
+      return'<div class="cardio-fld"><label>'+f.l+'</label><input type="'+f.type+'" value="'+String(v).replace(/"/g,'&quot;')+'" style="width:'+f.w+'px" oninput="onCardioChange('+di+',\''+s.id+'\',\''+f.k+'\',this.value)"></div>';
+    }).join('');
+    var proto=m.proto(s.params);
+    var protoHTML=proto.map(function(p){
+      return'<div class="cardio-proto-row"><span class="cardio-proto-phase">'+p.phase+'</span><div class="cardio-proto-bar '+p.cls+'" style="width:'+Math.max(4,Math.round(p.pct*100))+'%"></div><span class="cardio-proto-time">'+p.time+'</span><span class="cardio-proto-bpm">'+p.bpm+'</span></div>';
+    }).join('');
+    var obsInput='<div style="margin-top:8px"><label style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint)">Obs. para o aluno</label>'
+      +'<input type="text" style="width:100%;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:4px 8px;font-size:12px;color:var(--text);margin-top:3px;box-sizing:border-box" value="'+(s.notes||'').replace(/"/g,'&quot;')+'" placeholder="Pace alvo, equipamento, orientacoes..." oninput="onCardioChange('+di+',\''+s.id+'\',\'notes\',this.value)"></div>';
+    return'<div class="cardio-session-ed">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+      +'<span style="font-size:18px">'+m.icon+'</span>'+methodSel
+      +'<button class="cardio-del-btn" onclick="deleteCardioSession('+di+',\''+s.id+'\')" title="Remover">&#x2715;</button>'
+      +'</div>'
+      +'<div class="cardio-fields">'+fieldsHTML+'</div>'
+      +'<div class="cardio-proto-block"><div class="cardio-proto-lbl">Protocolo</div>'+protoHTML+'</div>'
+      +'<div class="cardio-ref">&#128218; '+m.science+'</div>'
+      +obsInput+'</div>';
+  }).join('');
+  html+='<button class="prep-tag-btn" onclick="addCardioSession('+di+')" style="background:rgba(200,242,80,.06);border-color:rgba(200,242,80,.3);color:#c8f250;margin-top:4px">&#127939; + Sessao Cardio / HIIT</button>';
+  return html;
+}
+function buildCardioSectionHTML(di){
+  return'<div class="cardio-section">'
+    +'<div class="cardio-section-lbl">&#127939; Cardio / HIIT / Corrida</div>'
+    +'<div id="cardio_sec_'+di+'">'+_buildCardioSectionInner(di)+'</div>'
+    +'</div>';
+}
+function buildCardioCard(cs,idx){
+  var m=CARDIO_METHODS[cs.method]||CARDIO_METHODS.hiit;
+  var done=cs.done===true;
+  var proto=m.proto(cs.params||{});
+  var protoHTML=proto.map(function(p){
+    return'<div class="cardio-proto-row"><span class="cardio-proto-phase">'+p.phase+'</span><div class="cardio-proto-bar '+p.cls+'" style="width:'+Math.max(4,Math.round(p.pct*100))+'%"></div><span class="cardio-proto-time">'+p.time+'</span><span class="cardio-proto-bpm">'+p.bpm+'</span></div>';
+  }).join('');
+  return'<div class="cardio-card-v2'+(done?' done':'')+'">'
+    +'<div class="cardio-card-hd"><span style="font-size:22px">'+m.icon+'</span>'
+    +'<div><div class="cardio-card-name">'+m.name+'</div><span class="cardio-badge">Cardio</span></div>'
+    +(done?'<span class="ex-done-badge" style="margin-left:auto">&#10003; Concluido</span>':'')+'</div>'
+    +'<div class="cardio-science-txt">'+m.science+'</div>'
+    +'<div class="cardio-proto-block"><div class="cardio-proto-lbl">Protocolo da sessao</div>'+protoHTML+'</div>'
+    +(m.tip?'<div class="cardio-tip-box">&#128161; '+m.tip+'</div>':'')
+    +(cs.notes?'<div style="font-size:11px;color:var(--text-faint);margin-top:6px;padding:6px 8px;background:var(--surface);border-radius:7px">&#128203; '+cs.notes.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>':'')
+    +(done
+      ?'<button class="btn ghost sm" onclick="stuUndoneCardio('+idx+')" style="margin-top:8px;width:100%">Desfazer</button>'
+      :'<button class="btn-add-v2" onclick="stuDoneCardio('+idx+')" style="width:100%;margin-top:10px">&#10003; Marcar como concluido</button>')
+    +'</div>';
+}
+function stuDoneCardio(idx){if(stuCardioLog[idx])stuCardioLog[idx].done=true;renderStuCards();}
+function stuUndoneCardio(idx){if(stuCardioLog[idx])stuCardioLog[idx].done=false;renderStuCards();}
+
 /* ============ Modal cadastro ============ */
 function openModal(){
   document.getElementById("modal").innerHTML=`
