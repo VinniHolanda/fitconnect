@@ -498,6 +498,24 @@
 .ex-prog-dot.done{background:var(--accent)}
 .ex-prog-dot.partial{background:rgba(200,242,80,.4)}
 .sets-log-v2{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+/* Séries preparatórias — editor treinador */
+.prep-editor{background:rgba(255,198,88,.06);border-radius:9px;padding:10px 12px;margin:2px 0 4px}
+.prep-editor-head{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--warn);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.prep-set-row{display:flex;gap:6px;align-items:center;margin-bottom:5px;flex-wrap:wrap}
+.prep-in{border:1px solid rgba(255,198,88,.35);background:var(--surface);border-radius:7px;padding:4px 8px;font-size:12px;color:var(--text);width:90px}
+.prep-in.wide{width:150px}
+.prep-del{background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:14px;padding:2px 5px;line-height:1}
+.prep-del:hover{color:var(--danger)}
+.prep-tag-btn{display:inline-flex;align-items:center;gap:4px;background:rgba(255,198,88,.1);border:1px dashed rgba(255,198,88,.4);color:var(--warn);border-radius:7px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
+.prep-tag-btn:hover{background:rgba(255,198,88,.2)}
+/* Séries preparatórias — aluno */
+.prep-guide{background:rgba(255,198,88,.07);border-radius:9px;padding:9px 12px;margin-bottom:8px;border:1px dashed rgba(255,198,88,.25)}
+.prep-guide-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--warn);margin-bottom:6px}
+.prep-row-v2{display:flex;align-items:center;gap:10px;padding:4px 0;border-bottom:1px solid rgba(255,198,88,.12)}
+.prep-row-v2:last-child{border-bottom:none}
+.prep-chip{width:26px;height:26px;border-radius:6px;background:rgba(255,198,88,.15);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--warn);flex-shrink:0}
+.prep-info{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.prep-note-txt{font-size:11px;color:var(--text-faint)}
 .set-row-v2{display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--surface-3,rgba(255,255,255,.04));border-radius:8px}
 .set-chip{width:20px;height:20px;border-radius:6px;background:var(--accent);color:#000;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .set-chip.done-chip{background:rgba(200,242,80,.25);color:var(--accent)}
@@ -1774,7 +1792,7 @@ function stuStartSession(){
     const _tr=targetReps(ex.reps);const _pr=_prs[ex.name];
     const _sg=_pr?suggestKgForReps(_pr.est1RM,_tr):null;
     const _rs=refSessionForEx(ex.name,c.rpeLog||[]);
-    return{name:ex.name,pat:ex.pat,isCond:ex.pat==="cond",method:ex.method,bisetGroup:ex.bisetGroup,notes:ex.notes||"",
+    return{name:ex.name,pat:ex.pat,isCond:ex.pat==="cond",method:ex.method,bisetGroup:ex.bisetGroup,notes:ex.notes||"",prepSets:ex.prepSets||[],
       planned:{sets:setsNum(ex.sets),reps:_tr,rest:ex.rest||"90s"},sets:[],tonnage:0,
       refKg:_rs?_rs.kg:null,refReps:_rs?_rs.reps:null,refDate:_rs?_rs.date:null,suggestedKg:_sg};
   });
@@ -2091,7 +2109,12 @@ function buildExCard(ex,i){
     +(remaining>1?'<button class="btn-all-v2" onclick="stuApplyAll('+i+')" title="Aplicar mesma carga e repetições nas '+remaining+' séries restantes">Aplicar em todos</button>':'')
     +'</div>';
   const _spark=exSparklineHTML(ex.name);
-  return '<div class="ex-card-v2'+(done?' done':isNext?' active':'')+'">'
+  const prepHTML=(ex.prepSets&&ex.prepSets.length)
+    ?'<div class="prep-guide"><div class="prep-guide-lbl">🔥 Aquecimento</div>'
+      +ex.prepSets.map((p,pi)=>'<div class="prep-row-v2"><span class="prep-chip">A'+(pi+1)+'</span><span class="prep-info">'+(p.load?esc(p.load)+' &nbsp;·&nbsp; ':'')+esc(p.reps||'—')+' reps</span>'+(p.note?'<span class="prep-note-txt">'+esc(p.note)+'</span>':'')+'</div>').join('')
+      +'</div>'
+    :'';
+  return '<div class="ex-card-v2"+(done?' done':isNext?' active':'')+'">'
     +'<div class="ex-hd-v2"><div class="ex-hd-left">'
     +'<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'
     +'<span class="ex-nm-v2">'+esc(ex.name)+'</span>'
@@ -2105,6 +2128,7 @@ function buildExCard(ex,i){
     +'<div class="ex-prog-strip">'+dots+'</div>'
     +(setsHTML?'<div class="sets-log-v2">'+setsHTML+'</div>':'')
     +mTip+prHint
+    +prepHTML
     +inputRow
     +'</div>';
 }
@@ -3583,8 +3607,9 @@ function editableDaysHTML(p){
       <td class="rm" style="white-space:nowrap">
         ${ei>0?`<button class="row-x" title="Mover para cima" onclick="moveEx(${di},${ei},-1)" style="opacity:0.5;font-size:11px">▲</button>`:`<span style="display:inline-block;width:22px"></span>`}
         ${ei<(d.exercises.length-1)?`<button class="row-x" title="Mover para baixo" onclick="moveEx(${di},${ei},1)" style="opacity:0.5;font-size:11px">▼</button>`:`<span style="display:inline-block;width:22px"></span>`}
+        <button class="row-x" title="Séries preparatórias" onclick="togglePrepPanel(${di},${ei})" style="color:var(--warn)">🔥</button>
         <button class="row-x" title="Remover" onclick="delEx(${di},${ei})">✕</button>
-      </td></tr>`).join("")}</tbody></table>
+      </td></tr><tr id="preprow_${di}_${ei}" style="display:${(ex.prepSets&&ex.prepSets.length)?'table-row':'none'}"><td colspan="8" style="padding:0 8px 8px"><div class="prep-editor" id="prepeditor_${di}_${ei}"><div class="prep-editor-head">🔥 Séries preparatórias</div>${buildPrepEditorRows(di,ei,ex.prepSets||[])}<button class="prep-tag-btn" onclick="addPrepSet(${di},${ei})" style="margin-top:6px">+ Série prep.</button></div></td></tr>`).join("")}</tbody></table>
     <div class="day-foot"><button class="btn ghost sm" onclick="addEx(${di})">+ Exercício</button></div></div>`).join("");
 }
 function moveEx(di,ei,dir){
@@ -4913,6 +4938,51 @@ document.addEventListener("input",e=>{
   if(t.dataset.k&&t.dataset.d!=null&&t.dataset.i!=null){var _ex=c.program.days[+t.dataset.d].exercises[+t.dataset.i];_ex[t.dataset.k]=t.value;if(t.dataset.k==="name"){_ex.pat=NAME2PAT[t.value]||patOf({name:t.value})||null;}scheduleSave();if(t.dataset.k==="sets"||t.dataset.k==="name")refreshAnalytics();return;}
 });
 
+/* ============ Séries preparatórias ============ */
+function buildPrepEditorRows(di,ei,ps){
+  if(!ps||!ps.length)return '';
+  return ps.map((p,pi)=>`<div class="prep-set-row">
+    <input class="prep-in" type="text" placeholder="carga (ex: barra, 40%)" value="${esc(p.load||'')}" oninput="onPrepChange(${di},${ei},${pi},'load',this.value)" title="Carga ou % do peso de trabalho">
+    <span style="color:var(--text-faint);font-size:12px">×</span>
+    <input class="prep-in" type="text" placeholder="reps" value="${esc(p.reps||'')}" oninput="onPrepChange(${di},${ei},${pi},'reps',this.value)" title="Repetições">
+    <input class="prep-in wide" type="text" placeholder="obs. opcional" value="${esc(p.note||'')}" oninput="onPrepChange(${di},${ei},${pi},'note',this.value)">
+    <button class="prep-del" onclick="delPrepSet(${di},${ei},${pi})" title="Remover">✕</button>
+  </div>`).join('');
+}
+function togglePrepPanel(di,ei){
+  var row=document.getElementById('preprow_'+di+'_'+ei);
+  if(!row)return;
+  var hidden=row.style.display==='none'||!row.style.display;
+  row.style.display=hidden?'table-row':'none';
+}
+function addPrepSet(di,ei){
+  var c=curProg();if(!c)return;
+  var ex=c.program.days[di].exercises[ei];
+  if(!ex.prepSets)ex.prepSets=[];
+  ex.prepSets.push({load:'',reps:'',note:''});
+  persist();
+  var row=document.getElementById('preprow_'+di+'_'+ei);
+  var edDiv=document.getElementById('prepeditor_'+di+'_'+ei);
+  if(row)row.style.display='table-row';
+  if(edDiv)edDiv.innerHTML='<div class="prep-editor-head">🔥 Séries preparatórias</div>'+buildPrepEditorRows(di,ei,ex.prepSets)+'<button class="prep-tag-btn" onclick="addPrepSet('+di+','+ei+')" style="margin-top:6px">+ Série prep.</button>';
+}
+function delPrepSet(di,ei,pi){
+  var c=curProg();if(!c)return;
+  var ex=c.program.days[di].exercises[ei];
+  if(!ex.prepSets)return;
+  ex.prepSets.splice(pi,1);
+  persist();
+  var edDiv=document.getElementById('prepeditor_'+di+'_'+ei);
+  if(edDiv)edDiv.innerHTML='<div class="prep-editor-head">🔥 Séries preparatórias</div>'+buildPrepEditorRows(di,ei,ex.prepSets)+'<button class="prep-tag-btn" onclick="addPrepSet('+di+','+ei+')" style="margin-top:6px">+ Série prep.</button>';
+  if(!ex.prepSets.length){var row=document.getElementById('preprow_'+di+'_'+ei);if(row)row.style.display='none';}
+}
+function onPrepChange(di,ei,pi,key,val){
+  var c=curProg();if(!c)return;
+  var ex=c.program.days[di].exercises[ei];
+  if(!ex.prepSets||ex.prepSets[pi]==null)return;
+  ex.prepSets[pi][key]=val;
+  scheduleSave();
+}
 /* ============ Modal cadastro ============ */
 function openModal(){
   document.getElementById("modal").innerHTML=`
