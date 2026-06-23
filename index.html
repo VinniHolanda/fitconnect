@@ -3276,19 +3276,14 @@ function buildAulasTab(c){
   var temRepo=cfg.temReposicao!==false;
   var log=(c.aulasLog||[]).slice().sort(function(a,b){return (b.data||'').localeCompare(a.data||'');});
   var logHTML=log.slice(0,40).map(function(e,i){
-    var lbl=e.tipo==='realizada'?'Aula realizada':e.tipo==='reposicao'?'Reposição usada':'Falta'+(e.reposicao?' (gera reposição)':'');
-    return '<div class="aula-log-row">'
-      +'<div class="aula-dot '+e.tipo+'"></div>'
-      +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">'+lbl+'</div>'
-      +(e.obs?'<div style="font-size:11.5px;color:var(--text-faint)">'+esc(e.obs)+'</div>':'')
-      +'</div>'
-      +'<div style="font-size:12px;color:var(--text-faint);white-space:nowrap;margin-right:4px">'+(e.data||'')+'</div>'
-      +'<button data-idx="'+i+'" data-cid="'+c.id+'" onclick="desfazerAula(this.dataset.cid,+this.dataset.idx)" style="background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:5px" title="Remover">✕</button>'
-      +'</div>';
+    var lbl=e.tipo==='realizada'?'✓ Aula realizada':e.tipo==='reposicao'?'↺ Reposição usada':'✗ Falta'+(e.reposicao?' (gera reposição)':'');
+    var dtFmt=(e.data||'').split('-').reverse().join('/');
+    var hoje2=new Date().toISOString().slice(0,10);
+    var isRetro=e.data&&e.data<hoje2;
+    return '<div class="aula-log-row">'      +'<div class="aula-dot '+e.tipo+'"></div>'      +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">'+lbl+'</div>'      +(e.obs?'<div style="font-size:11.5px;color:var(--text-faint)">'+esc(e.obs)+'</div>':'')      +(isRetro?'<div style="font-size:10.5px;color:var(--text-faint);margin-top:1px">retroativo</div>':'')      +'</div>'      +'<div style="font-size:12px;color:var(--text-faint);white-space:nowrap;margin-right:4px">'+dtFmt+'</div>'      +'<button data-idx="'+i+'" data-cid="'+c.id+'" onclick="desfazerAula(this.dataset.cid,+this.dataset.idx)" style="background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:5px" title="Remover">✕</button>'      +'</div>';
   }).join('');
-  return '<div class="panel">'
-    +'<div class="panel-title"><span class="dot"></span>Registrar aula rapidamente</div>'
-    +'<div class="aula-quick">'
+  var hj=new Date().toISOString().slice(0,10);
+  return '<div class="panel">'    +'<div class="panel-title"><span class="dot"></span>Registrar aula rapidamente</div>'    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 12px;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border)">'    +'<span style="font-size:12px;color:var(--text-faint);font-weight:600;white-space:nowrap">📅 Data da aula:</span>'    +'<input type="date" id="aula_data_retro_'+c.id+'" value="'+hj+'" max="'+hj+'" '    +'style="flex:1;background:transparent;border:none;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;outline:none;min-width:0">'    +'<span style="font-size:11px;color:var(--text-faint);white-space:nowrap">← mude para registrar retroativo</span>'    +'</div>'    +'<div class="aula-quick">'
     +'<button class="aula-qbtn realizada" data-cid="'+c.id+'" onclick="registrarAula(this.dataset.cid,\'realizada\',false)"><span class="qbtn-icon">✓</span>Aula feita</button>'
     +(temRepo
       ?'<button class="aula-qbtn falta" data-cid="'+c.id+'" onclick="registrarAula(this.dataset.cid,\'falta\',true)"><span class="qbtn-icon">✗</span>Faltou (c/ repo)</button>'
@@ -3330,11 +3325,16 @@ function buildAulasTab(c){
 async function registrarAula(cid,tipo,reposicao){
   var c=clients.find(function(x){return x.id===cid;}); if(!c)return;
   if(!c.aulasLog)c.aulasLog=[];
-  var hoje=new Date().toISOString().slice(0,10);
-  c.aulasLog.unshift({data:hoje,tipo:tipo,reposicao:!!reposicao,obs:'',ts:Date.now()});
-  await persist();
+  var inp=document.getElementById('aula_data_retro_'+cid);
+  var dataReg=inp&&inp.value?inp.value:new Date().toISOString().slice(0,10);
+  var jaExiste=c.aulasLog.some(function(e){return e.data===dataReg&&e.tipo===tipo;});
+  if(jaExiste&&!confirm('Já existe um registro nesta data. Adicionar mesmo assim?'))return;
+  c.aulasLog.unshift({data:dataReg,tipo:tipo,reposicao:!!reposicao,obs:'',ts:Date.now()});
+  try{ await persist(); }catch(err){ console.error('Erro ao salvar aula:',err); toast('⚠ Erro ao salvar — dado mantido localmente'); }
+  var dtFmt=dataReg.split('-').reverse().join('/');
   var lbl=tipo==='realizada'?'Aula registrada':tipo==='reposicao'?'Reposição registrada':'Falta registrada';
-  toast(lbl+' — '+hoje);
+  toast(lbl+' — '+dtFmt);
+  if(inp)inp.value=new Date().toISOString().slice(0,10);
   renderTrainerBody(c);
 }
 async function desfazerAula(cid,idx){
