@@ -861,6 +861,20 @@ function refSessionForEx(name,sessions){
   for(const s of sorted){const e=(s.exercises||[]).find(e=>e.name===name&&!e._type);if(e){const last=(e.sets||[]).filter(x=>+x.kg>0).pop();if(last)return{kg:+last.kg,reps:+last.reps||null,date:s.date||""};}}
   return null;
 }
+function refSetsForEx(name,sessions){
+  const sorted=(sessions||[]).filter(s=>s.exercises&&s.exercises.length).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  for(const s of sorted){const e=(s.exercises||[]).find(e=>e.name===name&&!e._type);if(e&&(e.sets||[]).length)return(e.sets||[]).map(function(x){return{kg:+x.kg||0,reps:+x.reps||0};});}
+  return null;
+}
+function pyramidRepScheme(repsStr,numSets){
+  var nums=(repsStr||"").match(/\d+/g);
+  if(!nums)return Array.from({length:numSets},function(_,i){return Math.max(4,12-i*2);});
+  var parsed=nums.map(Number);
+  if(parsed.length>=numSets)return parsed.slice(0,numSets);
+  var top=Math.max.apply(null,parsed);
+  if(top>=numSets*2)return Array.from({length:numSets},function(_,i){return Math.max(1,top-i*2);});
+  return Array.from({length:numSets},function(_,i){return Math.max(4,12-i*2);});
+}
 function refKgForEx(name,sessions){
   const sorted=(sessions||[]).filter(s=>s.exercises&&s.exercises.length).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
   for(const s of sorted){const e=(s.exercises||[]).find(e=>e.name===name);if(e){const last=(e.sets||[]).filter(x=>+x.kg>0).pop();if(last)return +last.kg;}}
@@ -1840,9 +1854,16 @@ function stuStartSession(){
     const _tr=targetReps(ex.reps);const _pr=_prs[ex.name];
     const _sg=_pr?suggestKgForReps(_pr.est1RM,_tr):null;
     const _rs=refSessionForEx(ex.name,c.rpeLog||[]);
+    const _allSets=refSetsForEx(ex.name,c.rpeLog||[]);
+    const _numSets=setsNum(ex.sets);
+    var _repScheme=null,_suggestPerSeries=null;
+    if(ex.method==="piramide"){
+      _repScheme=pyramidRepScheme(ex.reps,_numSets);
+      if(_pr)_suggestPerSeries=_repScheme.map(function(r){return suggestKgForReps(_pr.est1RM,r);});
+    }
     return{name:ex.name,pat:ex.pat,isCond:ex.pat==="cond",method:ex.method,bisetGroup:ex.bisetGroup,notes:ex.notes||"",prepSets:ex.prepSets||[],
-      planned:{sets:setsNum(ex.sets),reps:_tr,rest:ex.rest||"90s"},sets:[],tonnage:0,
-      refKg:_rs?_rs.kg:null,refReps:_rs?_rs.reps:null,refDate:_rs?_rs.date:null,suggestedKg:_sg};
+      planned:{sets:_numSets,reps:_tr,rest:ex.rest||"90s",repScheme:_repScheme,suggestPerSeries:_suggestPerSeries},sets:[],tonnage:0,
+      refKg:_rs?_rs.kg:null,refReps:_rs?_rs.reps:null,refDate:_rs?_rs.date:null,suggestedKg:_sg,refSets:_allSets};
   });
   /* Wellness registrado — não reduz volume automaticamente.
      Se score baixo, notificação vai ao treinador ao finalizar a sessão. */
@@ -1879,13 +1900,17 @@ function buildGuidedCard(ex,i){
   const acts=stuExLog.filter(e=>!e.isCond);
   const gIdx=acts.indexOf(ex);
   const dots=acts.map((_,di)=>'<div class="guided-prog-dot'+(di<gIdx?' done':di===gIdx?' cur':'')+'"></div>').join('');
-  const trep=ex.planned.reps;
   const done=ex.sets.length>=ex.planned.sets;
-  const defKg=ex.refKg!=null?ex.refKg:(ex.suggestedKg!=null?ex.suggestedKg:'');
-  const prHint=(ex.suggestedKg!=null||ex.refKg!=null)
-    ?'<div class="pr-hint-v2">💡 '+(ex.refKg!=null?'Última: <b>'+ex.refKg+' kg'+(ex.refReps?' × '+ex.refReps+' reps':'')+'</b>':'')+(ex.refKg!=null&&ex.suggestedKg!=null?' · ':'')+(ex.suggestedKg!=null?'Sugestão: <b>'+ex.suggestedKg+' kg</b>':'')+'</div>'
-    :'';
-  const inputRow=done
+  const curSeriesG=ex.sets.length;
+  const trep=ex.planned.repScheme&&ex.planned.repScheme[curSeriesG]!=null?ex.planned.repScheme[curSeriesG]:ex.planned.reps;
+  const curRefSetG=ex.refSets&&ex.refSets[curSeriesG]&&ex.refSets[curSeriesG].kg>0?ex.refSets[curSeriesG]:null;
+  const curSuggestG=ex.planned.suggestPerSeries?ex.planned.suggestPerSeries[curSeriesG]!=null?ex.planned.suggestPerSeries[curSeriesG]:ex.suggestedKg:ex.suggestedKg;
+  const defKg=curRefSetG?curRefSetG.kg:(curSuggestG!=null?curSuggestG:(ex.refKg!=null?ex.refKg:""));
+  var _hintRefG="",_hintSugG="";
+  if(curRefSetG){_hintRefG="S"+(curSeriesG+1)+" anterior: <b>"+curRefSetG.kg+" kg × "+curRefSetG.reps+" reps</b>";}
+  else if(ex.refKg!=null){_hintRefG="Última: <b>"+ex.refKg+" kg"+(ex.refReps?" × "+ex.refReps+" reps":"")+"</b>";}
+  if(curSuggestG!=null){_hintSugG="Sugestão p/ "+trep+" reps: <b>"+curSuggestG+" kg</b>";}
+  const prHint=(_hintRefG||_hintSugG)?'<div class="pr-hint-v2">💡 '+_hintRefG+(_hintRefG&&_hintSugG?" &nbsp;·&nbsp; ":"")+_hintSugG+"</div>":"";  const inputRow=done
     ?'<div style="text-align:center;padding:10px 0"><span class="ex-done-badge">✓ Concluído</span></div>'
     :'<div class="inp-row-v2" style="justify-content:center">'
     +'<span class="inp-serie-num">'+(ex.sets.length+1)+'</span>'
@@ -2116,8 +2141,11 @@ function buildExCard(ex,i){
       +'</div>';
   }
   const done=ex.sets.length>=ex.planned.sets;
-  const trep=ex.planned.reps;
-  const defKg=ex.refKg!=null?ex.refKg:(ex.suggestedKg!=null?ex.suggestedKg:"");
+  const curSeries=ex.sets.length;
+  const trep=ex.planned.repScheme&&ex.planned.repScheme[curSeries]!=null?ex.planned.repScheme[curSeries]:ex.planned.reps;
+  const curRefSet=ex.refSets&&ex.refSets[curSeries]&&ex.refSets[curSeries].kg>0?ex.refSets[curSeries]:null;
+  const curSuggest=ex.planned.suggestPerSeries?ex.planned.suggestPerSeries[curSeries]!=null?ex.planned.suggestPerSeries[curSeries]:ex.suggestedKg:ex.suggestedKg;
+  const defKg=curRefSet?curRefSet.kg:(curSuggest!=null?curSuggest:(ex.refKg!=null?ex.refKg:""));
   const remaining=ex.planned.sets-ex.sets.length;
   // progress dots
   const dots=Array.from({length:ex.planned.sets},(_,di)=>{
@@ -2135,14 +2163,12 @@ function buildExCard(ex,i){
     +'<button class="set-x-v2" onclick="stuDelSet('+i+','+si+')">✕</button>'
     +'</div>'
   ).join('');
-  // suggestion hint — mostra último registro + sugestão Epley
-  const prHint=(ex.suggestedKg!=null||ex.refKg!=null)
-    ?'<div class="pr-hint-v2">💡 '
-      +(ex.refKg!=null?'Última: <b>'+ex.refKg+' kg'+(ex.refReps?' × '+ex.refReps+' reps':'')+'</b>':'')
-      +(ex.refKg!=null&&ex.suggestedKg!=null?' &nbsp;·&nbsp; ':'')
-      +(ex.suggestedKg!=null?'Sugestão p/ '+trep+' reps: <b>'+ex.suggestedKg+' kg</b>':'')
-      +'</div>'
-    :'';
+  // sugestão por série ou geral
+  var _hintRef="",_hintSug="";
+  if(curRefSet){_hintRef="S"+(curSeries+1)+" anterior: <b>"+curRefSet.kg+" kg × "+curRefSet.reps+" reps</b>";}
+  else if(ex.refKg!=null){_hintRef="Última: <b>"+ex.refKg+" kg"+(ex.refReps?" × "+ex.refReps+" reps":"")+"</b>";}
+  if(curSuggest!=null){_hintSug="Sugestão p/ "+trep+" reps: <b>"+curSuggest+" kg</b>";}
+  const prHint=(_hintRef||_hintSug)?'<div class="pr-hint-v2">💡 '+_hintRef+(_hintRef&&_hintSug?" &nbsp;·&nbsp; ":"")+_hintSug+"</div>":'';
   // method badge/tip
   const mBadge=ex.method&&METH_BADGE[ex.method]?METH_BADGE[ex.method]:'';
   const mTip=ex.method&&METH_TIP[ex.method]?'<div class="meth-tip '+ex.method+'">'+METH_TIP[ex.method]+'</div>':'';
