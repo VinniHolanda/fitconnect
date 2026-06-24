@@ -856,7 +856,7 @@ function sessionToRow(cid,s){ return {id:s.id,client_id:cid,date:s.date,week:s.w
 function targetReps(s){const m=(s||"").match(/(\d+)(?:\s*[-–]\s*(\d+))?/);if(!m)return 10;return m[2]?Math.round((+m[1]+ +m[2])/2):+m[1];}
 // detecta exercício unilateral pelo nome (uma perna/braço → tonelagem ×2)
 function isUnilateral(name){
-  return /unilateral|alternado|single[\s-]?(leg|arm)|uma[\s-]?perna|um[\s-]?bra[çc]o/i.test(name||"");
+  return /unilateral|alterna[dt]|single[\s-]?(leg|arm)|uma[\s-]?perna|um[\s-]?bra[çc]o/i.test(name||"");
 }
 function exTonnage(ex){
   const base=(ex.sets||[]).reduce((t,s)=>t+(+s.reps||0)*(+s.kg||0),0);
