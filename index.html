@@ -854,7 +854,14 @@ function sessionToRow(cid,s){ return {id:s.id,client_id:cid,date:s.date,week:s.w
 /* ── Carga externa: tonelagem = Σ(séries × reps × kg) ───────────────────
    Referência: Cometti 2001; Poliquin. Complementa o sRPE (carga interna). */
 function targetReps(s){const m=(s||"").match(/(\d+)(?:\s*[-–]\s*(\d+))?/);if(!m)return 10;return m[2]?Math.round((+m[1]+ +m[2])/2):+m[1];}
-function exTonnage(ex){return (ex.sets||[]).reduce((t,s)=>t+(+s.reps||0)*(+s.kg||0),0);}
+// detecta exercício unilateral pelo nome (uma perna/braço → tonelagem ×2)
+function isUnilateral(name){
+  return /unilateral|alternado|single[\s-]?(leg|arm)|uma[\s-]?perna|um[\s-]?bra[çc]o/i.test(name||"");
+}
+function exTonnage(ex){
+  const base=(ex.sets||[]).reduce((t,s)=>t+(+s.reps||0)*(+s.kg||0),0);
+  return isUnilateral(ex.name)?base*2:base;
+}
 function sessionTonnage(exs){return (exs||[]).reduce((t,e)=>t+(e.tonnage!=null?e.tonnage:exTonnage(e)),0);}
 function refSessionForEx(name,sessions){
   const sorted=(sessions||[]).filter(s=>s.exercises&&s.exercises.length).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
@@ -916,7 +923,8 @@ function sessionTonnageLimit(dayExs,wk,sessions,clientLevel){
     const normKg=normRow?normRow[lvlIdx]:20;
     // Usa histórico quando existe; caso contrário usa normativo do nível
     const kg=refKg!=null?refKg:normKg;
-    lim+=setsNum(ex.sets)*targetReps(ex.reps)*kg;
+    const uniMult=isUnilateral(ex.name)?2:1;
+    lim+=setsNum(ex.sets)*targetReps(ex.reps)*kg*uniMult;
   }
   if(!hasAny)return null;
   return Math.round(lim*(wk.vol||1)*lvlFactor);
@@ -2198,7 +2206,7 @@ function buildExCard(ex,i){
     +(_spark?_spark:'')
     +'<div class="ex-meta-row"><span class="ex-tgt-v2">'+ex.planned.sets+'×'+ex.planned.reps+' reps · '+esc(ex.planned.rest||'')+'</span>'+mBadge+'</div>'
     +'</div>'
-    +(ex.tonnage?'<span class="ex-ton-v2">'+ex.tonnage.toLocaleString('pt-BR')+' kg</span>':'')
+    +(ex.tonnage?'<span class="ex-ton-v2">'+ex.tonnage.toLocaleString('pt-BR')+' kg'+(isUnilateral(ex.name)?'<span style="font-size:9px;opacity:.65;margin-left:3px">×2</span>':'')+'</span>':'')
     +'</div>'
     +'<div class="ex-prog-strip">'+dots+'</div>'
     +(setsHTML?'<div class="sets-log-v2">'+setsHTML+'</div>':'')
