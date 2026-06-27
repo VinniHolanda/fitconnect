@@ -215,7 +215,15 @@
   .modal-foot{padding:14px 24px 22px;display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--bg-2);border-top:1px solid var(--line-soft)}
   .err-hint{color:var(--danger);font-size:12px;margin-right:auto;align-self:center}
   .brand-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px;align-items:start;max-width:860px}
-    @media(max-width:820px){
+    /* ── Splash screen ── */
+  #splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
+  #splash.fade{opacity:0;pointer-events:none}
+  .splash-mark{width:60px;height:60px;border-radius:16px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:36px;margin-bottom:18px;box-shadow:0 0 40px rgba(200,242,80,.3)}
+  .splash-title{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
+  .splash-sub{font-size:13px;color:var(--text-faint);margin-bottom:28px}
+  .splash-spinner{width:24px;height:24px;border:2.5px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+
+  @media(max-width:820px){
     .app{grid-template-columns:1fr}.sidebar{position:fixed;left:-300px;z-index:60;transition:.25s;width:264px}.sidebar.open{left:0}
     .stats{grid-template-columns:1fr}.content,.topbar{padding-left:18px;padding-right:18px}.fgrid,.checks{grid-template-columns:1fr}.menu-toggle{display:inline-flex!important}.brand-grid{grid-template-columns:1fr!important}
   }
@@ -730,6 +738,7 @@
 .tag.tipo-c{background:rgba(100,160,255,.1);color:#64a0ff;border-color:rgba(100,160,255,.2)}
 </style>
 
+<div id="splash"><div class="splash-mark">F</div><div class="splash-title">FitConnect</div><div class="splash-sub">Programação de treino inteligente</div><div class="splash-spinner"></div></div>
 <div class="auth" id="authView" style="display:none">
   <div class="auth-card">
     <div class="brand"><div class="mark">FC</div><h1>FitConnect</h1></div>
@@ -849,8 +858,8 @@ async function dbSaveClient(c){
   await sset(clientKey(c.id),c);
 }
 /* ===== Sessões (carga/percepção de esforço) — tabela própria na nuvem ===== */
-function rowToSession(r){ return {id:r.id,date:r.date,week:r.week,dayName:r.day_name,min:r.minutes,srpe:r.srpe,by:r.logged_by,exercises:r.exercises||[],tonnage:r.tonnage||0,checkin:r.checkin||false,nutrition:r.nutrition||null,hydration:r.hydration||null}; }
-function sessionToRow(cid,s){ return {id:s.id,client_id:cid,date:s.date,week:s.week,day_name:s.dayName,minutes:s.min,srpe:s.srpe,logged_by:s.by,exercises:s.exercises||[],tonnage:s.tonnage||0,checkin:s.checkin||false,nutrition:s.nutrition||null,hydration:s.hydration||null}; }
+function rowToSession(r){ return {id:r.id,date:r.date,week:r.week,dayName:r.day_name,min:r.minutes,srpe:r.srpe,by:r.logged_by,exercises:r.exercises||[],tonnage:r.tonnage||0,checkin:r.checkin||false,nutrition:r.nutrition||null,hydration:r.hydration||null,cardioLog:r.cardio_log||[]}; }
+function sessionToRow(cid,s){ return {id:s.id,client_id:cid,date:s.date,week:s.week,day_name:s.dayName,minutes:s.min,srpe:s.srpe,logged_by:s.by,exercises:s.exercises||[],tonnage:s.tonnage||0,checkin:s.checkin||false,nutrition:s.nutrition||null,hydration:s.hydration||null,cardio_log:s.cardioLog||[]}; }
 /* ── Carga externa: tonelagem = Σ(séries × reps × kg) ───────────────────
    Referência: Cometti 2001; Poliquin. Complementa o sRPE (carga interna). */
 function targetReps(s){const m=(s||"").match(/(\d+)(?:\s*[-–]\s*(\d+))?/);if(!m)return 10;return m[2]?Math.round((+m[1]+ +m[2])/2):+m[1];}
@@ -860,7 +869,7 @@ function isUnilateral(name){
 }
 function exTonnage(ex){
   const base=(ex.sets||[]).reduce((t,s)=>t+(+s.reps||0)*(+s.kg||0),0);
-  return isUnilateral(ex.name)?base*2:base;
+  return (isUnilateral(ex.name)||ex.unilateral)?base*2:base;
 }
 function sessionTonnage(exs){return (exs||[]).reduce((t,e)=>t+(e.tonnage!=null?e.tonnage:exTonnage(e)),0);}
 function refSessionForEx(name,sessions){
@@ -1644,10 +1653,11 @@ async function startStudentSession(tid,cid){
   student={tid,cid}; await loadSessionsInto(sClient); await sset(SESSION_KEY,{role:"student",tid,cid}); await _loadTrainerBrand(tid); showStudentApp();
 }
 async function logout(){if(sb){try{await sb.auth.signOut();}catch(e){}}await sdel(SESSION_KEY);trainer=null;student=null;clients=[];sClients=[];sClient=null;currentId=null;showAuth();}
-function showAuth(){document.getElementById("studentView").style.display="none";document.getElementById("appView").style.display="none";document.getElementById("authView").style.display="flex";setAuthTab((sb||trainers.length)?"login":"signup");}
+function showAuth(){document.getElementById("studentView").style.display="none";document.getElementById("appView").style.display="none";document.getElementById("authView").style.display="flex";setAuthTab((sb||trainers.length)?"login":"signup");var _sp=document.getElementById("splash");if(_sp){_sp.classList.add("fade");setTimeout(function(){_sp.style.display="none";},500);}}
 function showApp(){
   document.getElementById("studentView").style.display="none";
   document.getElementById("authView").style.display="none";document.getElementById("appView").style.display="grid";
+  var _sp=document.getElementById("splash");if(_sp){_sp.classList.add("fade");setTimeout(function(){_sp.style.display="none";},500);}
   document.getElementById("trainerFoot").innerHTML=`<span class="avatar">${initials(trainer.name)}</span>
     <div class="who"><b>${esc(trainer.name)}</b><span>Treinador</span></div>
     <button class="logout" title="Sair" onclick="logout()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg><span class="logout-txt">Sair</span></button>
@@ -2037,7 +2047,7 @@ async function stuFinishSession(){
   const _limBase2=sessionTonnageLimit((_day2||{exercises:[]}).exercises,_wk2,_c2.rpeLog||[],_c2.level);
   const s={id:newId(),date:g("su_date").value||new Date().toISOString().slice(0,10),
     dayName:(sClient.program.days[stuDay]||{}).name||"",min,srpe,week:stuWeek,by:"aluno",exercises,tonnage:totalTonnage,
-    };
+    cardioLog:stuCardioLog.filter(function(cs){return cs.done;}).map(function(cs){return {method:cs.method,params:cs.params||{},notes:cs.notes||"",done:true};})};
   try{
     await dbAddSession(sClient,s);stuExLog=[];stuInSession=false;stuFinishing=false;stuShowWellness=false;stuWellness=null;stuVolumeAdj=null;_sessStartTs=null;stopRestTimer();
     renderStudentHome();
@@ -2432,7 +2442,7 @@ function renderStudentHome(){
     <td class="cell-ro" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.dayName||"")}${isCI?' <span class="checkin-badge">check-in</span>':''}</td>
     <td class="cell-ro">${isCI?'&mdash;':esc(s.min)+'min'}</td><td class="cell-ro">${isCI?'&mdash;':'<b>'+esc(s.srpe)+'</b>'}</td>
     <td class="cell-ro">${ton?`<b style="color:var(--accent)">${ton.toLocaleString('pt-BR')} kg</b>`:"&mdash;"}</td>
-    <td class="cell-ro" style="color:var(--text-faint)">${esc(s.by||"treinador")}</td>
+    <td class="cell-ro" style="color:var(--text-faint)">${esc(s.by||"treinador")}</td>${(s.cardioLog&&s.cardioLog.length)?'<td class="cell-ro" style="font-size:11px">🏃 '+s.cardioLog.length+'</td>':'<td class="cell-ro" style="color:var(--text-faint)">—</td>'}
     <td class="rm" style="white-space:nowrap"><button class="row-x" title="Editar" onclick="stuEditSession('${s.id}')" style="opacity:0.55;margin-right:3px">✎</button>${s.by==="aluno"?`<button class="row-x" onclick="studentDelSession('${s.id}')">✕</button>`:""}</td></tr>`;
   }).join("");
   // Auto-detectar próxima sessão
@@ -3678,7 +3688,7 @@ function editableDaysHTML(p){
     <div class="day-head"><input data-d="${di}" data-dk="name" value="${esc(d.name)}">
       <input class="focus" data-d="${di}" data-dk="focus" value="${esc(d.focus||"")}" placeholder="grupos">
       <button class="day-x" title="Remover dia" onclick="delDay(${di})">✕</button></div>
-    <table><thead><tr><th style="width:28%">Exercício</th><th>Séries</th><th>Reps</th><th>Desc.</th><th>RPE</th><th>Método</th><th style="width:16%">Obs.</th><th style="width:60px"></th></tr></thead>
+    <table><thead><tr><th style="width:26%">Exercício</th><th>Séries</th><th>Reps</th><th>Desc.</th><th>RPE</th><th>Método</th><th style="width:14%">Obs.</th><th title="Unilateral (×2 tonelagem)">×2</th><th style="width:60px"></th></tr></thead>
     <tbody>${(d.exercises||[]).map((ex,ei)=>`<tr>
       <td class="ex"><div class="ex-alts-wrap"><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="name" value="${esc(ex.name)}" style="width:calc(100% - 36px)"><button class="ex-alts-btn" title="Ver exercícios alternativos" onclick="toggleExAlts(${di},${ei},this)">≈↕</button><div class="ex-alts-dd" id="alts_dd_${di}_${ei}"></div></div></td>
       <td><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="sets" value="${esc(ex.sets)}"></td>
@@ -3687,6 +3697,7 @@ function editableDaysHTML(p){
       <td><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="rpe" value="${esc(ex.rpe)}"></td>
       <td><select class="cell-in" data-d="${di}" data-i="${ei}" data-k="method" style="background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:4px 6px;color:var(--text);font-size:12px;min-width:80px"><option value="" ${!ex.method?"selected":""}>—</option><option value="biset" ${ex.method==="biset"?"selected":""}>Bi-set</option><option value="dropset" ${ex.method==="dropset"?"selected":""}>Drop-set</option><option value="piramide" ${ex.method==="piramide"?"selected":""}>Pirâmide</option></select></td>
       <td><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="notes" value="${esc(ex.notes)}"></td>
+      <td style="text-align:center"><label title="Unilateral — tonelagem ×2"><input type="checkbox" data-d="${di}" data-i="${ei}" data-k="unilateral" ${ex.unilateral?"checked":""} style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer"></label></td>
       <td class="rm" style="white-space:nowrap">
         ${ei>0?`<button class="row-x" title="Mover para cima" onclick="moveEx(${di},${ei},-1)" style="opacity:0.5;font-size:11px">▲</button>`:`<span style="display:inline-block;width:22px"></span>`}
         ${ei<(d.exercises.length-1)?`<button class="row-x" title="Mover para baixo" onclick="moveEx(${di},${ei},1)" style="opacity:0.5;font-size:11px">▼</button>`:`<span style="display:inline-block;width:22px"></span>`}
@@ -3909,7 +3920,7 @@ function renderProgram(p){
   const tabs=wks.length?`<div class="wk-tabs">${tab('base','Base ✎',viewWeek==null)}${wks.map((w,i)=>tab(i,'S'+(i+1),viewWeek===i)).join("")}${tab('all','Todas',viewWeek==='all')}</div>`:"";
   let daysHTML, footHint;
   if(viewWeek==null){
-    daysHTML = editableDaysHTML(p) + `<button class="btn ghost sm" onclick="addDay()" style="margin:2px 0 18px">+ Adicionar dia</button>`;
+    daysHTML = editableDaysHTML(p) + `<button class="btn ghost sm" onclick="addDay()" style="margin:2px 0 18px">+ Adicionar dia</button><button class="btn ghost sm" style="margin-left:8px" onclick="openAutoCardioPlan('${c&&c.id||currentId||''}')">🏃 Plano automático cardio</button>`;
     footHint = `Esta é a <b>semana-base</b> (acúmulo, 100%). Edite aqui — as 4 semanas derivam dela. Tudo é salvo automaticamente.`;
   } else if(viewWeek==='all'){
     daysHTML = wks.map((w,i)=>weekBlockHTML(p,w,i)).join("");
@@ -4939,7 +4950,8 @@ function renderLoadPanel(){
     <td class="cell-ro">${sessionLoad(s)} UA</td>
     <td class="cell-ro">${+s.tonnage?`<b>${(+s.tonnage).toLocaleString('pt-BR')} kg</b>`:'&mdash;'}</td>
     <td class="cell-ro">${_wCol}</td>
-    <td class="cell-ro" style="font-size:12px">${s.checkin?'<span class="checkin-badge">✓ check-in</span>':'—'}</td>
+    <td class="cell-ro" style="font-size:12px">${s.checkin?'<span class="checkin-badge">✓ check-in</span>':''+(s.nutrition?'<span title="Nutrição" style="font-size:11px">🥗'+s.nutrition+'</span> ':'')+(s.hydration?'<span title="Hidratação" style="font-size:11px">💧'+s.hydration+'</span>':'')+((!s.checkin&&!s.nutrition&&!s.hydration)?'&mdash;':'')}</td>
+    <td class="cell-ro" style="font-size:11px">${(s.cardioLog&&s.cardioLog.length)?'🏃 '+s.cardioLog.length:'—'}</td>
     <td class="cell-ro" style="color:var(--text-faint)">${esc(s.by||"treinador")}</td>
     <td class="rm" style="white-space:nowrap"><button class="row-x" title="Editar" onclick="trainerEditSession('${c.id}','${s.id}')" style="opacity:0.55;margin-right:3px">✎</button><button class="row-x" onclick="delSession('${s.id}')">✕</button></td></tr>`;}).join(""):"";
   box.innerHTML=`<div class="panel" style="margin-top:14px">
@@ -4998,9 +5010,22 @@ function renderLoadPanel(){
           <button class="btn ghost sm" onclick="exportCsv('${c.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg> CSV</button>
         </div>
       </div>
-      ${sessRows?`<table><thead><tr><th>Data</th><th>Sem.</th><th>Sessão</th><th>Dur.</th><th>sRPE</th><th>Carga</th><th>Tonelagem</th><th>Prontidão</th><th>Feedback</th><th>Fonte</th><th></th></tr></thead><tbody>${sessRows}</tbody></table>`
+      ${sessRows?`<table><thead><tr><th>Data</th><th>Sem.</th><th>Sessão</th><th>Dur.</th><th>sRPE</th><th>Carga</th><th>Tonelagem</th><th>Prontidão</th><th>Feedback</th><th>Cardio</th><th>Fonte</th><th></th></tr></thead><tbody>${sessRows}</tbody></table>`
       :`<div class="tab-empty" style="padding:20px 0"><div>Nenhuma sessão corresponde a "<b>${esc(_sessSearch)}</b>".</div></div>`}
     </div>`:``}
+    ${(()=>{
+      const cardioSess=log.filter(s=>s.cardioLog&&s.cardioLog.length>0);
+      if(!cardioSess.length)return "";
+      const rows=cardioSess.slice().reverse().slice(0,15).map(s=>{
+        const ICONS={tabata:'⚡',hiit:'🔥',fartlek:'🌿',intervalo:'🎯',tempo:'🏃',continua:'🚶',billat:'⏱',piramide_c:'📈'};
+        const names={tabata:'Tabata',hiit:'HIIT',fartlek:'Fartlek',intervalo:'Intervalado',tempo:'Tempo/Limiar',continua:'Corrida Contínua',billat:'Billat 30/30',piramide_c:'Pirâmide Cardio'};
+        const csRows=s.cardioLog.map(cs=>'<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(200,242,80,.08);border:1px solid rgba(200,242,80,.2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;color:#c8f250;margin:2px">'+(ICONS[cs.method]||'🏃')+'&nbsp;'+(names[cs.method]||cs.method)+'</span>').join('');
+        return '<tr><td class="cell-ro">'+esc(s.date||'')+'</td><td class="cell-ro">S'+((+s.week||0)+1)+'</td><td class="cell-ro" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(s.dayName||'')+'</td><td class="cell-ro">'+s.cardioLog.length+' método(s)</td><td class="cell-ro">'+csRows+'</td></tr>';
+      }).join('');
+      return '<div class="panel" style="margin-top:14px"><div class="panel-title"><span class="dot"></span>🏃 Histórico de Cardio / HIIT</div>'
+        +'<div class="ai-hint" style="margin-top:-6px;margin-bottom:12px">Sessões de cardio e HIIT concluídas pelo aluno.</div>'
+        +'<table><thead><tr><th>Data</th><th>Sem.</th><th>Sessão</th><th>Métodos</th><th>Detalhes</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    })()}
     <div class="refs" style="margin-top:16px"><div class="h">Base científica</div>
       <div class="r">session-RPE: carga (UA) = sRPE × min — Foster et al. (2001); revisão de validade: Haddad et al. (2017), 36 estudos.</div>
       <div class="r">Monotonia/strain como marcadores de excesso de treino — Foster (1998). São associativos, não diagnósticos.</div>
@@ -5018,7 +5043,7 @@ document.addEventListener("input",e=>{
   const t=e.target;if(!t.dataset)return;const c=curProg();if(!c)return;
   if(t.dataset.pk){c.program[t.dataset.pk]=t.value;scheduleSave();return;}
   if(t.dataset.dk!=null&&t.dataset.d!=null){c.program.days[+t.dataset.d][t.dataset.dk]=t.value;scheduleSave();if(t.dataset.dk==="name")renderSidebar();return;}
-  if(t.dataset.k&&t.dataset.d!=null&&t.dataset.i!=null){var _ex=c.program.days[+t.dataset.d].exercises[+t.dataset.i];_ex[t.dataset.k]=t.value;if(t.dataset.k==="name"){_ex.pat=NAME2PAT[t.value]||patOf({name:t.value})||null;}scheduleSave();if(t.dataset.k==="sets"||t.dataset.k==="name")refreshAnalytics();return;}
+  if(t.dataset.k&&t.dataset.d!=null&&t.dataset.i!=null){var _ex=c.program.days[+t.dataset.d].exercises[+t.dataset.i];var _val=t.type==="checkbox"?t.checked:t.value;_ex[t.dataset.k]=_val;if(t.dataset.k==="name"){_ex.pat=NAME2PAT[t.value]||patOf({name:t.value})||null;}scheduleSave();if(t.dataset.k==="sets"||t.dataset.k==="name")refreshAnalytics();return;}
 });
 
 /* ============ Séries preparatórias ============ */
@@ -5066,6 +5091,128 @@ function onPrepChange(di,ei,pi,key,val){
   ex.prepSets[pi][key]=val;
   scheduleSave();
 }
+
+/* ============ Plano automático cardio por objetivo ============ */
+var AUTO_CARDIO_GOALS = {
+  'Condicionamento (4 sem)': {
+    weeks:4, label:'Condicionamento geral',
+    plan:[
+      {method:'continua',params:{tempo:'20',ritmo:'Leve / Zona 2'}},
+      {method:'fartlek',params:{tempo:'25',ciclos:'4'}},
+      {method:'continua',params:{tempo:'25',ritmo:'Moderado / Zona 3'}},
+      {method:'hiit',params:{work:'30',rest:'90',rounds:'6'}}
+    ]
+  },
+  'Emagrecimento (8 sem)': {
+    weeks:8, label:'Emagrecimento — alto gasto calórico',
+    plan:[
+      {method:'hiit',params:{work:'30',rest:'60',rounds:'8'}},
+      {method:'tabata',params:{rounds:'4',rest_between:'60'}},
+      {method:'continua',params:{tempo:'30',ritmo:'Moderado / Zona 3'}},
+      {method:'hiit',params:{work:'40',rest:'40',rounds:'10'}},
+      {method:'fartlek',params:{tempo:'30',ciclos:'6'}},
+      {method:'tabata',params:{rounds:'6',rest_between:'60'}},
+      {method:'continua',params:{tempo:'35',ritmo:'Moderado-alto / Zona 3-4'}},
+      {method:'intervalo',params:{work:'60',rest:'60',rounds:'8'}}
+    ]
+  },
+  '1 km (6 sem)': {
+    weeks:6, label:'Base para 1km',
+    plan:[
+      {method:'continua',params:{tempo:'15',ritmo:'Leve'}},
+      {method:'intervalo',params:{work:'30',rest:'90',rounds:'6'}},
+      {method:'continua',params:{tempo:'20',ritmo:'Moderado'}},
+      {method:'billat',params:{repeticoes:'8'}},
+      {method:'tempo',params:{tempo:'15',intensidade:'Limiar'}},
+      {method:'intervalo',params:{work:'60',rest:'60',rounds:'5'}}
+    ]
+  },
+  '5 km (10 sem)': {
+    weeks:10, label:'Preparação 5 km',
+    plan:[
+      {method:'continua',params:{tempo:'20',ritmo:'Leve / Zona 2'}},
+      {method:'fartlek',params:{tempo:'25',ciclos:'5'}},
+      {method:'continua',params:{tempo:'25',ritmo:'Moderado'}},
+      {method:'tempo',params:{tempo:'20',intensidade:'Limiar'}},
+      {method:'intervalo',params:{work:'60',rest:'90',rounds:'6'}},
+      {method:'continua',params:{tempo:'30',ritmo:'Moderado'}},
+      {method:'billat',params:{repeticoes:'10'}},
+      {method:'fartlek',params:{tempo:'30',ciclos:'6'}},
+      {method:'tempo',params:{tempo:'25',intensidade:'Limiar'}},
+      {method:'continua',params:{tempo:'35',ritmo:'Moderado-lento'}}
+    ]
+  },
+  '10 km (12 sem)': {
+    weeks:12, label:'Preparação 10 km',
+    plan:[
+      {method:'continua',params:{tempo:'25',ritmo:'Leve'}},
+      {method:'fartlek',params:{tempo:'30',ciclos:'5'}},
+      {method:'continua',params:{tempo:'30',ritmo:'Moderado'}},
+      {method:'tempo',params:{tempo:'20',intensidade:'Limiar'}},
+      {method:'intervalo',params:{work:'60',rest:'90',rounds:'8'}},
+      {method:'continua',params:{tempo:'35',ritmo:'Moderado'}},
+      {method:'billat',params:{repeticoes:'12'}},
+      {method:'fartlek',params:{tempo:'35',ciclos:'7'}},
+      {method:'tempo',params:{tempo:'30',intensidade:'Limiar'}},
+      {method:'continua',params:{tempo:'40',ritmo:'Moderado'}},
+      {method:'intervalo',params:{work:'90',rest:'60',rounds:'8'}},
+      {method:'continua',params:{tempo:'45',ritmo:'Moderado-lento'}}
+    ]
+  }
+};
+
+function openAutoCardioPlan(cid){
+  var c=clients.find(function(x){return x.id===cid;}); if(!c||!c.program)return;
+  var opts=Object.keys(AUTO_CARDIO_GOALS).map(function(k){
+    var g=AUTO_CARDIO_GOALS[k];
+    return '<option value="'+k+'">'+k+' — '+g.label+'</option>';
+  }).join('');
+  var nDays=(c.program.days||[]).length;
+  document.getElementById('modal').innerHTML=
+    '<div class="modal-head"><h3>🏃 Plano Automático de Cardio</h3><p>Distribui sessões de cardio automaticamente pelos dias do treino, com progressão semanal.</p></div>'
+    +'<div class="form-section"><div class="sec-t">Configurar</div>'
+    +'<div class="fgrid">'
+    +'<div class="fl full"><label>Objetivo do plano</label><select id="ac_goal">'+opts+'</select></div>'
+    +'<div class="fl"><label>Distribuir a partir do dia nº</label><select id="ac_start">'
+    +Array.from({length:nDays},function(_,i){return '<option value="'+i+'">Dia '+(i+1)+' — '+((c.program.days[i]||{}).name||'')+'</option>';}).join('')
+    +'</select></div>'
+    +'<div class="fl"><label>Frequência</label><select id="ac_freq"><option value="1">Em todo dia de treino</option><option value="2" selected>A cada 2 dias</option><option value="3">A cada 3 dias</option></select></div>'
+    +'</div>'
+    +'<div class="alert ok" style="margin-top:14px"><div>ℹ</div><div><b>Como funciona</b><div class="body">O motor seleciona o método cardio do plano conforme a semana do mesociclo atual, distribui pelos dias selecionados e respeita a frequência escolhida. Sessões existentes não são substituídas.</div></div></div>'
+    +'</div>'
+    +'<div class="modal-foot"><span class="err-hint" id="ac_err"></span><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn accent" onclick="applyAutoCardioPlan(''+cid+'')">Aplicar plano</button></div>';
+  document.getElementById('overlay').classList.add('open');
+}
+
+function applyAutoCardioPlan(cid){
+  var c=clients.find(function(x){return x.id===cid;}); if(!c||!c.program)return;
+  var goalKey=document.getElementById('ac_goal').value;
+  var startDay=parseInt(document.getElementById('ac_start').value)||0;
+  var freq=parseInt(document.getElementById('ac_freq').value)||2;
+  var plan=AUTO_CARDIO_GOALS[goalKey];
+  if(!plan){document.getElementById('ac_err').textContent='Selecione um objetivo.';return;}
+  var meso=mesoFor(c);
+  var curWeek=Math.min(stuWeek||0, plan.weeks-1);
+  var methodIdx=Math.min(curWeek, plan.plan.length-1);
+  var chosen=plan.plan[methodIdx];
+  var days=c.program.days||[];
+  var added=0;
+  for(var i=startDay;i<days.length;i+=(freq||1)){
+    if(!days[i])continue;
+    if(!days[i].cardioSessions)days[i].cardioSessions=[];
+    var alreadyHas=days[i].cardioSessions.some(function(s){return s.method===chosen.method;});
+    if(!alreadyHas){
+      days[i].cardioSessions.push({id:newId(),method:chosen.method,params:Object.assign({},chosen.params),notes:'Auto: '+goalKey});
+      added++;
+    }
+  }
+  persist();
+  closeModal();
+  renderProgram(c.program);
+  toast(added>0?'Cardio adicionado em '+added+' dia(s) — método: '+(CARDIO_METHODS[chosen.method]||{name:chosen.method}).name:'Nenhum dia novo — sessão já existia.');
+}
+/* ============ fim Plano automático cardio ============ */
+
 /* ============ Módulo Cardio / HIIT / Corrida ============ */
 const CARDIO_METHODS={
   tabata:{
@@ -5585,22 +5732,4 @@ function pwaDismiss(){
       var synced=_q.length-failed.length;
       if(synced>0){
         if(typeof renderStudentHome==='function')renderStudentHome();
-        if(typeof toast==='function')toast(synced+' treino(s) sincronizado(s) com a nuvem!');
-      }
-      _updateOfflineBadge();
-      _syncLock=false;
-    }).catch(function(){_syncLock=false;});
-  }
-  window.addEventListener('online',function(){
-    _updateOnline();
-    if(typeof toast==='function')toast('Conexão restaurada!');
-    setTimeout(_nucleo_syncQ,1500); /* pequeno delay para a conexão estabilizar */
-  });
-  /* Tenta sync também ao iniciar online */
-  window.addEventListener('load',function(){if(navigator.onLine)setTimeout(_nucleo_syncQ,3000);});
-  /* Checar ao carregar */
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',_updateOnline);
-  } else { _updateOnline(); }
-})();
-</script>
+        if(typeof toast==='function')toast(synce
