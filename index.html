@@ -3329,7 +3329,7 @@ function aulasStats(c){
   var faltas=cicloEvents.filter(function(e){return e.tipo==='falta';}).length;
   var faltasSemRepo=cicloEvents.filter(function(e){return e.tipo==='falta'&&!e.reposicao;}).length;
   var reposicoes=cicloEvents.filter(function(e){return e.tipo==='reposicao';}).length;
-  var creditosGerados=log.filter(function(e){return e.tipo==='falta'&&e.reposicao;}).length;
+  var creditosGerados=log.filter(function(e){return e.tipo==='falta'&&e.reposicao;}).length+(c.creditosCarry||0);
   var creditosUsados=log.filter(function(e){return e.tipo==='reposicao';}).length;
   var creditos=Math.max(0,creditosGerados-creditosUsados);
   var total=cfg.aulasPorMes||0;
@@ -3423,18 +3423,16 @@ async function registrarAula(cid,tipo,reposicao){
 }
 async function iniciarNovoCiclo(cid,auto){
   var c=clients.find(function(x){return x.id===cid;}); if(!c)return;
+  var stBefore=aulasStats(c);
   if(!auto){
-    var stChk=aulasStats(c);
-    var msg=stChk.creditos>0
-      ?'Ainda há '+stChk.creditos+' reposição'+(stChk.creditos>1?'ões':'')+' pendente'+(stChk.creditos>1?'s':'')+'. Iniciar um novo ciclo mesmo assim? A reposição em aberto continua valendo.'
-      :'Iniciar um novo ciclo agora? Isso zera a contagem de aulas do ciclo atual.';
+    var msg=stBefore.creditos>0
+      ?'Ainda há '+stBefore.creditos+' reposição'+(stBefore.creditos>1?'ões':'')+' pendente'+(stBefore.creditos>1?'s':'')+'. Iniciar um novo ciclo mesmo assim? O histórico será limpo, mas a reposição em aberto continua valendo.'
+      :'Iniciar um novo ciclo agora? Isso limpa o histórico e zera a contagem de aulas do ciclo atual.';
     if(!confirm(msg))return;
   }
-  if(!c.aulasLog)c.aulasLog=[];
+  c.creditosCarry=stBefore.creditos; // preserva saldo de reposição pendente mesmo limpando o histórico
   var hoje=new Date().toISOString().slice(0,10);
-  var lastTs=c.aulasLog.reduce(function(mx,e){var t=typeof e.ts==='number'?e.ts:0;return t>mx?t:mx;},0);
-  var tsNovo=Math.max(Date.now(),lastTs+1);
-  c.aulasLog.unshift({data:hoje,tipo:'ciclo',auto:!!auto,reposicao:false,obs:'',ts:tsNovo});
+  c.aulasLog=[{data:hoje,tipo:'ciclo',auto:!!auto,reposicao:false,obs:'',ts:Date.now()}]; // limpa histórico antigo — só fica o marcador do novo ciclo
   try{ await persist(); }catch(err){ console.error('Erro ao salvar novo ciclo:',err); toast('⚠ Erro ao salvar — dado mantido localmente'); }
   toast(auto?'🔄 Plano completo — novo ciclo iniciado automaticamente!':'🔄 Novo ciclo iniciado');
   renderTrainerBody(c);
