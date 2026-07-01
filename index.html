@@ -3327,12 +3327,13 @@ function aulasStats(c){
   var cicloEvents=log.filter(function(e){return e.tipo!=='ciclo'&&eventTs(e)>=ciclo.ts;});
   var realizadas=cicloEvents.filter(function(e){return e.tipo==='realizada';}).length;
   var faltas=cicloEvents.filter(function(e){return e.tipo==='falta';}).length;
+  var faltasSemRepo=cicloEvents.filter(function(e){return e.tipo==='falta'&&!e.reposicao;}).length;
   var reposicoes=cicloEvents.filter(function(e){return e.tipo==='reposicao';}).length;
   var creditosGerados=log.filter(function(e){return e.tipo==='falta'&&e.reposicao;}).length;
   var creditosUsados=log.filter(function(e){return e.tipo==='reposicao';}).length;
   var creditos=Math.max(0,creditosGerados-creditosUsados);
   var total=cfg.aulasPorMes||0;
-  var feitas=realizadas+reposicoes;
+  var feitas=realizadas+reposicoes+faltasSemRepo;
   var restantes=Math.max(0,total-feitas);
   var pct=total?Math.min(100,Math.round(feitas/total*100)):0;
   var cicloCompleto=total>0&&feitas>=total;
