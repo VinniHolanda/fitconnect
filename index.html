@@ -712,6 +712,14 @@
 .aula-dot.realizada{background:var(--accent)}
 .aula-dot.falta{background:var(--danger)}
 .aula-dot.reposicao{background:var(--warn)}
+.aula-dot.ciclo{background:var(--text-dim)}
+.aula-ciclo-warn{display:flex;align-items:flex-start;gap:10px;background:rgba(255,198,88,.1);border:1.5px solid rgba(255,198,88,.3);border-radius:12px;padding:12px 14px;margin-bottom:16px}
+.aula-ciclo-warn .aci-icon{font-size:18px;line-height:1;margin-top:1px}
+.aula-ciclo-warn .aci-body{flex:1;font-size:12.5px;color:var(--text-dim);line-height:1.5}
+.aula-ciclo-warn .aci-body b{color:var(--warn)}
+.aula-ciclo-btn{margin-top:8px;background:var(--warn);color:var(--accent-ink);border:none;border-radius:8px;padding:8px 14px;font-family:var(--body);font-weight:800;font-size:12px;cursor:pointer}
+.aula-ciclo-manual{background:none;border:1.5px solid var(--line-soft);color:var(--text-faint);border-radius:8px;padding:6px 12px;font-family:var(--body);font-weight:700;font-size:11.5px;cursor:pointer;margin-top:8px}
+.aula-ciclo-manual:hover{color:var(--text-dim);border-color:var(--line)}
 /* ── Agenda ────────────────────────────────────────────── */
 .agenda-week{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:18px}
 @media(max-width:700px){.agenda-week{grid-template-columns:1fr}}
@@ -3295,23 +3303,40 @@ function renderTrainerBody(cl){
   }
 }
 /* ============ Controle de Aulas ============ */
+function dateStartTs(dataStr){
+  var d=new Date((dataStr||'')+'T00:00:00');
+  return isNaN(d.getTime())?0:d.getTime();
+}
+function eventTs(e){
+  return typeof e.ts==='number'?e.ts:dateStartTs(e.data);
+}
+function currentCicloInicio(c){
+  var log=c.aulasLog||[];
+  var ciclos=log.filter(function(e){return e.tipo==='ciclo';}).sort(function(a,b){return eventTs(b)-eventTs(a);});
+  if(ciclos.length) return {data:ciclos[0].data,ts:eventTs(ciclos[0])};
+  var cfg=c.pacote||{};
+  if(cfg.cicloInicio) return {data:cfg.cicloInicio,ts:dateStartTs(cfg.cicloInicio)};
+  var now=new Date();
+  var d=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-01';
+  return {data:d,ts:dateStartTs(d)};
+}
 function aulasStats(c){
   var log=c.aulasLog||[];
-  var now=new Date();
-  var ym=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0');
-  var thisMonth=log.filter(function(e){return (e.data||'').startsWith(ym);});
-  var realizadas=thisMonth.filter(function(e){return e.tipo==='realizada';}).length;
-  var faltas=thisMonth.filter(function(e){return e.tipo==='falta';}).length;
-  var reposicoes=thisMonth.filter(function(e){return e.tipo==='reposicao';}).length;
+  var cfg=c.pacote||{};
+  var ciclo=currentCicloInicio(c);
+  var cicloEvents=log.filter(function(e){return e.tipo!=='ciclo'&&eventTs(e)>=ciclo.ts;});
+  var realizadas=cicloEvents.filter(function(e){return e.tipo==='realizada';}).length;
+  var faltas=cicloEvents.filter(function(e){return e.tipo==='falta';}).length;
+  var reposicoes=cicloEvents.filter(function(e){return e.tipo==='reposicao';}).length;
   var creditosGerados=log.filter(function(e){return e.tipo==='falta'&&e.reposicao;}).length;
   var creditosUsados=log.filter(function(e){return e.tipo==='reposicao';}).length;
   var creditos=Math.max(0,creditosGerados-creditosUsados);
-  var cfg=c.pacote||{};
   var total=cfg.aulasPorMes||0;
   var feitas=realizadas+reposicoes;
   var restantes=Math.max(0,total-feitas);
   var pct=total?Math.min(100,Math.round(feitas/total*100)):0;
-  return {realizadas:realizadas,faltas:faltas,reposicoes:reposicoes,creditos:creditos,total:total,restantes:restantes,feitas:feitas,pct:pct,thisMonth:thisMonth};
+  var cicloCompleto=total>0&&feitas>=total;
+  return {realizadas:realizadas,faltas:faltas,reposicoes:reposicoes,creditos:creditos,total:total,restantes:restantes,feitas:feitas,pct:pct,cicloInicio:ciclo.data,cicloCompleto:cicloCompleto};
 }
 function buildAulasTab(c){
   var st=aulasStats(c);
@@ -3320,7 +3345,7 @@ function buildAulasTab(c){
   var temRepo=cfg.temReposicao!==false;
   var log=(c.aulasLog||[]).slice().sort(function(a,b){return (b.data||'').localeCompare(a.data||'');});
   var logHTML=log.slice(0,40).map(function(e,i){
-    var lbl=e.tipo==='realizada'?'✓ Aula realizada':e.tipo==='reposicao'?'↺ Reposição usada':'✗ Falta'+(e.reposicao?' (gera reposição)':'');
+    var lbl=e.tipo==='realizada'?'✓ Aula realizada':e.tipo==='reposicao'?'↺ Reposição usada':e.tipo==='ciclo'?'🔄 Novo ciclo '+(e.auto?'(automático — plano completo)':'(iniciado manualmente)'):'✗ Falta'+(e.reposicao?' (gera reposição)':'');
     var dtFmt=(e.data||'').split('-').reverse().join('/');
     var hoje2=new Date().toISOString().slice(0,10);
     var isRetro=e.data&&e.data<hoje2;
@@ -3344,11 +3369,17 @@ function buildAulasTab(c){
     +'</div>'
     +(st.total?'<div style="margin-bottom:18px">'
       +'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-faint);margin-bottom:4px">'
-      +'<span>Progresso de '+new Date().toLocaleString('pt-BR',{month:'long'})+'</span>'
+      +'<span>Progresso do ciclo <span style="color:var(--text-faint);font-weight:600">(desde '+st.cicloInicio.split('-').reverse().join('/')+')</span></span>'
       +'<span><b style="color:var(--text)">'+st.feitas+'</b>/'+st.total+' aulas</span></div>'
       +'<div class="aula-stat-bar"><div class="aula-stat-fill '+barCls+'" style="width:'+st.pct+'%"></div></div>'
-      +(st.pct>=100?'<div style="font-size:11.5px;color:var(--danger);margin-top:4px;font-weight:700">Plano esgotado este mês.</div>':'')
+      +(st.cicloCompleto&&st.creditos===0?'<div style="font-size:11.5px;color:var(--text-faint);margin-top:4px">Ciclo completo — um novo ciclo será iniciado automaticamente na próxima aula.</div>':'')
       +'</div>':'')
+    +(st.cicloCompleto&&st.creditos>0?'<div class="aula-ciclo-warn"><div class="aci-icon">⚠️</div><div class="aci-body">'
+      +'<b>Ciclo completo, mas há '+st.creditos+' reposição'+(st.creditos>1?'ões':'')+' pendente'+(st.creditos>1?'s':'')+'.</b><br>'
+      +'O novo ciclo não inicia sozinho enquanto houver reposição em aberto — resolva a'+(st.creditos>1?'s':'')+' reposiç'+(st.creditos>1?'ões':'ão')+' pendente'+(st.creditos>1?'s':'')+' ou inicie manualmente abaixo.'
+      +'<br><button class="aula-ciclo-btn" data-cid="'+c.id+'" onclick="iniciarNovoCiclo(this.dataset.cid,false)">🔄 Iniciar novo ciclo mesmo assim</button>'
+      +'</div></div>'
+      :(st.total?'<button class="aula-ciclo-manual" data-cid="'+c.id+'" onclick="iniciarNovoCiclo(this.dataset.cid,false)">🔄 Iniciar novo ciclo manualmente</button>':''))
     +'</div>'
     +'<div class="panel" style="margin-top:14px">'
     +'<div class="panel-title"><span class="dot"></span>Configuração do plano mensal</div>'
@@ -3379,6 +3410,32 @@ async function registrarAula(cid,tipo,reposicao){
   var lbl=tipo==='realizada'?'Aula registrada':tipo==='reposicao'?'Reposição registrada':'Falta registrada';
   toast(lbl+' — '+dtFmt);
   if(inp)inp.value=new Date().toISOString().slice(0,10);
+  var st=aulasStats(c);
+  if(st.cicloCompleto&&st.creditos===0){
+    await iniciarNovoCiclo(cid,true);
+    return;
+  }
+  if(st.cicloCompleto&&st.creditos>0){
+    setTimeout(function(){toast('⚠ Plano completo, mas há '+st.creditos+' reposição'+(st.creditos>1?'ões':'')+' pendente'+(st.creditos>1?'s':'')+'. Novo ciclo só inicia manualmente.');},1400);
+  }
+  renderTrainerBody(c);
+}
+async function iniciarNovoCiclo(cid,auto){
+  var c=clients.find(function(x){return x.id===cid;}); if(!c)return;
+  if(!auto){
+    var stChk=aulasStats(c);
+    var msg=stChk.creditos>0
+      ?'Ainda há '+stChk.creditos+' reposição'+(stChk.creditos>1?'ões':'')+' pendente'+(stChk.creditos>1?'s':'')+'. Iniciar um novo ciclo mesmo assim? A reposição em aberto continua valendo.'
+      :'Iniciar um novo ciclo agora? Isso zera a contagem de aulas do ciclo atual.';
+    if(!confirm(msg))return;
+  }
+  if(!c.aulasLog)c.aulasLog=[];
+  var hoje=new Date().toISOString().slice(0,10);
+  var lastTs=c.aulasLog.reduce(function(mx,e){var t=typeof e.ts==='number'?e.ts:0;return t>mx?t:mx;},0);
+  var tsNovo=Math.max(Date.now(),lastTs+1);
+  c.aulasLog.unshift({data:hoje,tipo:'ciclo',auto:!!auto,reposicao:false,obs:'',ts:tsNovo});
+  try{ await persist(); }catch(err){ console.error('Erro ao salvar novo ciclo:',err); toast('⚠ Erro ao salvar — dado mantido localmente'); }
+  toast(auto?'🔄 Plano completo — novo ciclo iniciado automaticamente!':'🔄 Novo ciclo iniciado');
   renderTrainerBody(c);
 }
 async function desfazerAula(cid,idx){
