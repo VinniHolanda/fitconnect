@@ -5666,16 +5666,28 @@ document.getElementById("overlay").addEventListener("click",e=>{if(e.target.id==
 /* ============ Init ============ */
 (async function(){
   if(sb){
+    let _handled=false;
     try{
-      const {data:{session}}=await sb.auth.getSession();
-      if(session&&session.user){
-        const uid=session.user.id;
-        const {data:prof}=await sb.from("profiles").select("role,name").eq("id",uid).maybeSingle();
-        if(prof&&prof.role==="student"){ await startStudentSessionCloud(uid); if(sClient) return; }
-        else { trainer={id:uid,name:(prof&&prof.name)||session.user.email,email:session.user.email}; clients=await dbLoadClients(uid); showApp(); goDashboard(); _renderNotifBadge(); return; }
+      await Promise.race([
+        (async function(){
+          const {data:{session}}=await sb.auth.getSession();
+          if(session&&session.user){
+            const uid=session.user.id;
+            const {data:prof}=await sb.from("profiles").select("role,name").eq("id",uid).maybeSingle();
+            if(prof&&prof.role==="student"){ await startStudentSessionCloud(uid); if(sClient){_handled=true;} }
+            else { trainer={id:uid,name:(prof&&prof.name)||session.user.email,email:session.user.email}; clients=await dbLoadClients(uid); showApp(); goDashboard(); _renderNotifBadge(); _handled=true; }
+          }
+        })(),
+        new Promise(function(_,reject){setTimeout(function(){reject(new Error('timeout: Supabase demorou demais para responder'));},12000);})
+      ]);
+    }catch(e){
+      console.error('[boot]',e);
+      if(String(e&&e.message||'').indexOf('timeout')>-1){
+        setTimeout(function(){ if(typeof toast==='function')toast('⚠ Conexão lenta — tente novamente em instantes'); },600);
       }
-    }catch(e){ console.error(e); }
-    showAuth(); return;
+    }
+    if(!_handled)showAuth();
+    return;
   }
   trainers=await sget(TRAINERS_KEY)||[];
   const sess=await sget(SESSION_KEY);
