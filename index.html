@@ -720,6 +720,12 @@
 .aula-ciclo-btn{margin-top:8px;background:var(--warn);color:var(--accent-ink);border:none;border-radius:8px;padding:8px 14px;font-family:var(--body);font-weight:800;font-size:12px;cursor:pointer}
 .aula-ciclo-manual{background:none;border:1.5px solid var(--line-soft);color:var(--text-faint);border-radius:8px;padding:6px 12px;font-family:var(--body);font-weight:700;font-size:11.5px;cursor:pointer;margin-top:8px}
 .aula-ciclo-manual:hover{color:var(--text-dim);border-color:var(--line)}
+.wkstart-picker{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.wkstart-label{font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:8px}
+.wkstart-chips{display:flex;gap:8px;flex-wrap:wrap}
+.wkstart-chip{background:var(--surface);border:1.5px solid var(--line-soft);color:var(--text-dim);border-radius:8px;padding:7px 13px;font-family:var(--body);font-weight:700;font-size:12.5px;cursor:pointer}
+.wkstart-chip:hover{border-color:var(--line)}
+.wkstart-chip.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 /* ── Agenda ────────────────────────────────────────────── */
 .agenda-week{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:18px}
 @media(max-width:700px){.agenda-week{grid-template-columns:1fr}}
@@ -1441,7 +1447,7 @@ function buildProgram(c,extra){
     });
   }
   const goalShort=c.goal.split("(")[0].trim().toLowerCase();
-  const summary=`Programa de ${split.days.length} dias no formato ${SPLIT_LABEL[split.type]}, montado para ${c.name.split(" ")[0]} (${c.level.toLowerCase()}) com foco em ${goalShort}, usando ${c.eq.toLowerCase()}. Séries e repetições calibradas para o objetivo${conservative?", em versão CONSERVADORA por sinalização no PAR-Q (cargas leves a moderadas, sem exercícios de alta sobrecarga axial)":""}${avoid.size?". Exercícios contraindicados pelas limitações relatadas foram automaticamente substituídos":""}.`;
+  const summary=`Programa de ${split.days.length} treinos no formato ${SPLIT_LABEL[split.type]}, montado para ${c.name.split(" ")[0]} (${c.level.toLowerCase()}) com foco em ${goalShort}, usando ${c.eq.toLowerCase()}. Séries e repetições calibradas para o objetivo${conservative?", em versão CONSERVADORA por sinalização no PAR-Q (cargas leves a moderadas, sem exercícios de alta sobrecarga axial)":""}${avoid.size?". Exercícios contraindicados pelas limitações relatadas foram automaticamente substituídos":""}.`;
   const principles=["Sobrecarga progressiva","Volume calibrado por grupo (alvo semanal)","Volume ajustado ao nível "+c.level.toLowerCase(),"Seleção por equipamento ("+c.eq.toLowerCase()+")",SPLIT_LABEL[split.type]];
   if(avoid.size) principles.push("Filtro de segurança: "+[...avoid].join(", "));
   const warnings=buildWarnings(c,avoid,conservative);
@@ -2460,7 +2466,7 @@ function renderStudentHome(){
   const _logAll=c.rpeLog||[];
   const _days2=c.program.days||[];
   const _doneThisWeek=_days2.filter((_,di)=>_logAll.some(s=>(+s.week||0)===stuWeek&&(s.dayName||"")===((_days2[di])||{}).name)).length;
-  const _isNewWeek=!_next.allDone&&stuDay===0&&stuWeek>0&&_logAll.filter(s=>(+s.week||0)===stuWeek).length===0;
+  const _isNewWeek=!_next.allDone&&stuWeek>0&&_logAll.filter(s=>(+s.week||0)===stuWeek).length===0;
   const _exRowsAuto=(_dayAuto.exercises||[]).map(ex=>`<tr><td class="ro-ex cell-ro">${esc(ex.name)}</td><td class="cell-ro" style="color:var(--text-faint)">${esc(ex.notes||PAT_LABEL[ex.pat]||"—")}</td><td class="cell-ro">${esc(ex.sets)}</td><td class="cell-ro">${esc(ex.reps)}</td><td class="cell-ro">${esc(ex.rest)}</td><td class="cell-ro">RPE ${esc(ex.rpe)}</td></tr>`).join("");
   const _back=`<button class="stu-back-btn" onclick="setStuTab('home')">← Início</button>`;
   let _stuContent='';
@@ -2485,6 +2491,7 @@ function renderStudentHome(){
         <div><div style="font-size:13px;font-weight:700;color:var(--text-faint);margin-bottom:2px">S${stuWeek+1} de ${meso.weeks.length} · ${_doneThisWeek} de ${_days2.length} sessões nesta semana</div>
         <div class="stu-week-bar" style="max-width:200px">${_weekProgressDots}</div></div>
       </div>
+      ${weekStartPickerHTML(c,_next,_doneThisWeek)}
       <div class="wk-head" style="margin-bottom:12px"><div><b>${esc(_dayAuto.name||'')}</b><span class="wk-meta">${esc(_wkAuto.f||'')} · alvo RPE ${esc(_wkAuto.rpe||'')} · ${esc(_wkAuto.load||"")}</span></div><div class="wk-how">${esc(_wkAuto.how||"")}</div></div>
       <table><thead><tr><th style="width:34%">Exercício</th><th>Foco</th><th>Séries</th><th>Reps</th><th>Descanso</th><th>Intensidade</th></tr></thead><tbody>${_exRowsAuto}</tbody></table>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
@@ -3579,7 +3586,7 @@ function programHistoryHTML(c){
         <span style="font-size:11px;color:var(--text-faint)">${esc(h.savedAt?new Date(h.savedAt).toLocaleDateString('pt-BR'):"?")} · ${nd} dias</span>
       </div>
       ${h.program.summary?`<div style="font-size:12px;color:var(--text-dim);margin:5px 0 4px;line-height:1.45">${esc(h.program.summary.substring(0,120))}${h.program.summary.length>120?'…':''}</div>`:''}
-      ${preview?`<div style="font-size:11.5px;color:var(--text-faint)">Dia A: ${esc(preview)}</div>`:''}
+      ${preview?`<div style="font-size:11.5px;color:var(--text-faint)">Treino A: ${esc(preview)}</div>`:''}
       <button class="btn ghost sm" style="margin-top:8px" onclick="viewHistProgram('${c.id}',${i})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Ver programa completo</button>
     </div>`;
   }).join("");
@@ -3711,7 +3718,7 @@ PAR-Q positivo: ${parqTxt}
 Observações: ${c.notes||"nenhuma"}${extra?"\nInstruções do treinador: "+extra:""}
 
 Responda em português do Brasil APENAS com um objeto JSON dentro de um bloco \`\`\`json ... \`\`\`, sem nenhum texto fora do bloco. Schema exato:
-{"summary":"2-4 frases de racional","principles":["3-5 princípios curtos aplicados"],"days":[{"name":"Dia A — ...","focus":"grupos musculares","exercises":[{"name":"","sets":"","reps":"","rest":"","rpe":"","notes":""}]}],"progression":"como progredir nas próximas semanas","warnings":"cuidados com saúde/lesões deste aluno (ou vazio)","references":[{"title":"","url":""}]}
+{"summary":"2-4 frases de racional","principles":["3-5 princípios curtos aplicados"],"days":[{"name":"Treino A — ...","focus":"grupos musculares","exercises":[{"name":"","sets":"","reps":"","rest":"","rpe":"","notes":""}]}],"progression":"como progredir nas próximas semanas","warnings":"cuidados com saúde/lesões deste aluno (ou vazio)","references":[{"title":"","url":""}]}
 Gere exatamente ${c.days} dias de treino coerentes com o objetivo. Quando adequado ao objetivo e nível, aplique métodos avançados: (a) bi-set — executar 2 exercícios agonista-antagonista sem descanso (ex.: supino + remada; bíceps + tríceps) — indique com campo "method":"biset" em ambos; (b) drop-set — reduzir peso ~20% ao atingir a falha sem descanso — indique com "method":"dropset"; (c) pirâmide ascendente — aumentar peso a cada série — indique com "method":"piramide". Use métodos apenas se coerentes com o objetivo e nível do aluno (iniciantes: evitar; intermediários/avançados: aplicar com moderação). Em "references" liste as fontes que você consultou (com URL quando houver).`;
 }
 async function copyText(t){
@@ -3743,7 +3750,7 @@ function editableDaysHTML(p){
   return (p.days||[]).map((d,di)=>`<div class="day">
     <div class="day-head"><input data-d="${di}" data-dk="name" value="${esc(d.name)}">
       <input class="focus" data-d="${di}" data-dk="focus" value="${esc(d.focus||"")}" placeholder="grupos">
-      <button class="day-x" title="Remover dia" onclick="delDay(${di})">✕</button></div>
+      <button class="day-x" title="Remover treino" onclick="delDay(${di})">✕</button></div>
     <table><thead><tr><th style="width:26%">Exercício</th><th>Séries</th><th>Reps</th><th>Desc.</th><th>RPE</th><th>Método</th><th style="width:14%">Obs.</th><th title="Unilateral (×2 tonelagem)">×2</th><th style="width:60px"></th></tr></thead>
     <tbody>${(d.exercises||[]).map((ex,ei)=>`<tr>
       <td class="ex"><div class="ex-alts-wrap"><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="name" value="${esc(ex.name)}" style="width:calc(100% - 36px)"><button class="ex-alts-btn" title="Ver exercícios alternativos" onclick="toggleExAlts(${di},${ei},this)">≈↕</button><div class="ex-alts-dd" id="alts_dd_${di}_${ei}"></div></div></td>
@@ -3976,7 +3983,7 @@ function renderProgram(p){
   const tabs=wks.length?`<div class="wk-tabs">${tab('base','Base ✎',viewWeek==null)}${wks.map((w,i)=>tab(i,'S'+(i+1),viewWeek===i)).join("")}${tab('all','Todas',viewWeek==='all')}</div>`:"";
   let daysHTML, footHint;
   if(viewWeek==null){
-    daysHTML = editableDaysHTML(p) + `<button class="btn ghost sm" onclick="addDay()" style="margin:2px 0 18px">+ Adicionar dia</button><button class="btn ghost sm" style="margin-left:8px" onclick="openAutoCardioPlan('${c&&c.id||currentId||''}')">🏃 Plano automático cardio</button>`;
+    daysHTML = editableDaysHTML(p) + `<button class="btn ghost sm" onclick="addDay()" style="margin:2px 0 18px">+ Adicionar treino</button><button class="btn ghost sm" style="margin-left:8px" onclick="openAutoCardioPlan('${c&&c.id||currentId||''}')">🏃 Plano automático cardio</button>`;
     footHint = `Esta é a <b>semana-base</b> (acúmulo, 100%). Edite aqui — as 4 semanas derivam dela. Tudo é salvo automaticamente.`;
   } else if(viewWeek==='all'){
     daysHTML = wks.map((w,i)=>weekBlockHTML(p,w,i)).join("");
@@ -4168,12 +4175,46 @@ function trainerMsgTabHTML(c){
     </div>
   </div>`;
 }
+/* ===== Escolha do aluno: qual treino inicia a semana ===== */
+function weekStartKey(cid){ return 'nucleo_weekstart_'+cid; }
+function getWeekStartOverride(c,week){
+  try{
+    var raw=localStorage.getItem(weekStartKey(c.id));
+    if(!raw)return null;
+    var v=JSON.parse(raw);
+    if(v&&v.week===week&&typeof v.day==='number')return v.day;
+  }catch(e){}
+  return null;
+}
+function setWeekStartOverride(c,week,day){
+  try{ localStorage.setItem(weekStartKey(c.id),JSON.stringify({week:week,day:day})); }catch(e){}
+}
+function stuChooseWeekStart(week,day){
+  if(!sClient)return;
+  setWeekStartOverride(sClient,week,day);
+  renderStudentHome();
+}
+function weekStartPickerHTML(c,next,doneThisWeek){
+  var days=c.program.days||[];
+  if(next.allDone||doneThisWeek>0||days.length<2)return '';
+  var ov=getWeekStartOverride(c,next.week);
+  var chips=days.map(function(d,i){
+    var active=(ov==null?i===0:i===ov);
+    return '<button class="wkstart-chip'+(active?' active':'')+'" onclick="stuChooseWeekStart('+next.week+','+i+')">'+esc(d.name||('Treino '+(i+1)))+'</button>';
+  }).join('');
+  return '<div class="wkstart-picker"><div class="wkstart-label">Qual treino vai iniciar a semana?</div><div class="wkstart-chips">'+chips+'</div></div>';
+}
 function getNextSession(c){
   const meso=mesoFor(c),weeks=meso.weeks||[],days=(c.program.days||[]);
   if(!weeks.length||!days.length)return{week:0,day:0};
   const log=c.rpeLog||[];
   for(let wi=0;wi<weeks.length;wi++){
-    for(let di=0;di<days.length;di++){
+    var startIdx=0;
+    var ov=getWeekStartOverride(c,wi);
+    if(typeof ov==='number'&&ov>=0&&ov<days.length)startIdx=ov;
+    var order=[];
+    for(let k=0;k<days.length;k++)order.push((startIdx+k)%days.length);
+    for(const di of order){
       const done=log.some(s=>(+s.week||0)===wi&&(s.dayName||"")===(days[di].name||""));
       if(!done)return{week:wi,day:di};
     }
@@ -4192,7 +4233,7 @@ function buildStudentDashboard(c,first){
   const nextExCount=(day.exercises||[]).filter(e=>e.pat!=='cond').length;
   const estMin=Math.round(nextExCount*11+10);
   const totalSess=log.length;
-  const isNewWeek=!next.allDone&&next.day===0&&next.week>0&&log.filter(s=>(+s.week||0)===next.week).length===0;
+  const isNewWeek=!next.allDone&&next.week>0&&log.filter(s=>(+s.week||0)===next.week).length===0;
   // Semanas consecutivas com ao menos 1 sessão
   let streakW=0;
   for(let wi=next.week;wi>=0;wi--){if(log.some(s=>(+s.week||0)===wi))streakW++;else break;}
@@ -4992,7 +5033,7 @@ function renderLoadPanel(){
         <span title="variabilidade dia a dia (Foster)">Monotonia <b style="color:${monoWarn?'var(--warn)':'var(--text)'}">${monoTxt}</b></span>
         <span>Strain <b>${st.strain??"—"}</b></span>
       </div>
-      <div class="lw-rec" style="border-color:${ar.col}33"><span class="lw-badge" style="background:${ar.col}22;color:${ar.col}">${ar.level}</span> ${esc(ar.msg)}${monoWarn?' <span style="color:var(--warn)">· Monotonia alta: alterne dias pesados/leves.</span>':''}</div>
+      <div class="lw-rec" style="border-color:${ar.col}33"><span class="lw-badge" style="background:${ar.col}22;color:${ar.col}">${ar.level}</span> ${esc(ar.msg)}${monoWarn?' <span style="color:var(--warn)">· Monotonia alta: alterne treinos pesados/leves.</span>':''}</div>
     </div>`;
   });
   const _logFiltered=_sessSearch?log.filter(function(s){
@@ -5092,8 +5133,8 @@ function renderLoadPanel(){
 function curProg(){const c=clients.find(x=>x.id===currentId);return c&&c.program?c:null;}
 function addEx(di){const c=curProg();if(!c)return;c.program.days[di].exercises.push({name:"",sets:"",reps:"",rest:"",rpe:"",notes:""});persist();renderProgram(c.program);}
 function delEx(di,ei){const c=curProg();if(!c)return;c.program.days[di].exercises.splice(ei,1);persist();renderProgram(c.program);toast("Removido");}
-function addDay(){const c=curProg();if(!c)return;c.program.days.push({name:"Novo dia",focus:"",exercises:[{name:"",sets:"",reps:"",rest:"",rpe:"",notes:""}]});persist();renderProgram(c.program);}
-function delDay(di){const c=curProg();if(!c)return;if(!confirm("Remover este dia inteiro?"))return;c.program.days.splice(di,1);persist();renderProgram(c.program);toast("Dia removido");}
+function addDay(){const c=curProg();if(!c)return;c.program.days.push({name:"Novo treino",focus:"",exercises:[{name:"",sets:"",reps:"",rest:"",rpe:"",notes:""}]});persist();renderProgram(c.program);}
+function delDay(di){const c=curProg();if(!c)return;if(!confirm("Remover este treino inteiro?"))return;c.program.days.splice(di,1);persist();renderProgram(c.program);toast("Dia removido");}
 let anaT;function refreshAnalytics(){clearTimeout(anaT);anaT=setTimeout(renderAnalytics,250);}
 document.addEventListener("input",e=>{
   const t=e.target;if(!t.dataset)return;const c=curProg();if(!c)return;
@@ -5225,14 +5266,14 @@ function openAutoCardioPlan(cid){
   }).join('');
   var nDays=(c.program.days||[]).length;
   document.getElementById('modal').innerHTML=
-    '<div class="modal-head"><h3>🏃 Plano Automático de Cardio</h3><p>Distribui sessões de cardio automaticamente pelos dias do treino, com progressão semanal.</p></div>'
+    '<div class="modal-head"><h3>🏃 Plano Automático de Cardio</h3><p>Distribui sessões de cardio automaticamente pelos treinos do programa, com progressão semanal.</p></div>'
     +'<div class="form-section"><div class="sec-t">Configurar</div>'
     +'<div class="fgrid">'
     +'<div class="fl full"><label>Objetivo do plano</label><select id="ac_goal">'+opts+'</select></div>'
-    +'<div class="fl"><label>Distribuir a partir do dia nº</label><select id="ac_start">'
-    +Array.from({length:nDays},function(_,i){return '<option value="'+i+'">Dia '+(i+1)+' — '+((c.program.days[i]||{}).name||'')+'</option>';}).join('')
+    +'<div class="fl"><label>Distribuir a partir do treino nº</label><select id="ac_start">'
+    +Array.from({length:nDays},function(_,i){return '<option value="'+i+'">Treino '+(i+1)+' — '+((c.program.days[i]||{}).name||'')+'</option>';}).join('')
     +'</select></div>'
-    +'<div class="fl"><label>Frequência</label><select id="ac_freq"><option value="1">Em todo dia de treino</option><option value="2" selected>A cada 2 dias</option><option value="3">A cada 3 dias</option></select></div>'
+    +'<div class="fl"><label>Frequência</label><select id="ac_freq"><option value="1">Em todo treino</option><option value="2" selected>A cada 2 dias</option><option value="3">A cada 3 dias</option></select></div>'
     +'</div>'
     +'<div class="alert ok" style="margin-top:14px"><div>ℹ</div><div><b>Como funciona</b><div class="body">O motor seleciona o método cardio do plano conforme a semana do mesociclo atual, distribui pelos dias selecionados e respeita a frequência escolhida. Sessões existentes não são substituídas.</div></div></div>'
     +'</div>'
@@ -5265,7 +5306,7 @@ function applyAutoCardioPlan(cid){
   persist();
   closeModal();
   renderProgram(c.program);
-  toast(added>0?'Cardio adicionado em '+added+' dia(s) — método: '+(CARDIO_METHODS[chosen.method]||{name:chosen.method}).name:'Nenhum dia novo — sessão já existia.');
+  toast(added>0?'Cardio adicionado em '+added+' treino(s) — método: '+(CARDIO_METHODS[chosen.method]||{name:chosen.method}).name:'Nenhum dia novo — sessão já existia.');
 }
 /* ============ fim Plano automático cardio ============ */
 
