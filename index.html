@@ -1839,6 +1839,7 @@ function showStudentApp(){
   document.getElementById("authView").style.display="none";
   document.getElementById("appView").style.display="none";
   document.getElementById("studentView").style.display="block";
+  var _sp=document.getElementById("splash");if(_sp){_sp.classList.add("fade");setTimeout(function(){_sp.style.display="none";},500);}
   stuWeek=0;stuDay=0;
   stuProfileData=JSON.parse(localStorage.getItem('nucleo_profile_'+(sClient&&sClient.id||'guest'))||'null');
   /* solicitar permissão de notificação e agendar lembrete */
