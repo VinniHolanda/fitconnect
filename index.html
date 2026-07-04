@@ -3266,7 +3266,7 @@ function goDashboard(){
   const withProg=clients.filter(c=>c.program).length,flags=clients.filter(parqFlag).length;
   const inactivePanel=buildInactivePanel();
   document.getElementById("content").innerHTML=`
-    <div class="page-head"><h2>Bom treino, ${esc((trainer.name||'').split(' ')[0])}.</h2>
+    <div class="page-head"><h2>Fala, treinador ${esc((trainer.name||'').split(' ')[0])}.</h2>
     <p>Cadastre o aluno com a ficha completa (dados, PAR-Q e anamnese) e o motor gera um treino na hora, de acordo com objetivo, nível, equipamento e limitações. Tudo grátis e salvo na sua conta.</p></div>
     <div class="stats"><div class="stat"><div class="n accent">${clients.length}</div><div class="l">Alunos cadastrados</div></div>
     <div class="stat"><div class="n">${withProg}</div><div class="l">Com treino montado</div></div>
@@ -5903,8 +5903,8 @@ function pwaDismiss(){
 (function(){
   if(!('serviceWorker' in navigator))return;
   const swSrc=[
-    'const APP_CACHE="nucleo-v2";',
-    'const FONT_CACHE="nucleo-fonts-v2";',
+    'const APP_CACHE="nucleo-v3";',
+    'const FONT_CACHE="nucleo-fonts-v3";',
     'self.addEventListener("install",function(){self.skipWaiting();});',
     'self.addEventListener("activate",function(e){',
     '  e.waitUntil(caches.keys().then(function(keys){',
@@ -5924,7 +5924,8 @@ function pwaDismiss(){
     '    }));',
     '    return;',
     '  }',
-    '  e.respondWith(fetch(e.request).then(function(res){',
+    '  var netReq=new Request(url,{cache:"no-store"});', // bypassa o cache HTTP do navegador — garante bytes realmente novos a cada deploy
+    '  e.respondWith(fetch(netReq).then(function(res){',
     '    var clone=res.clone();',
     '    caches.open(APP_CACHE).then(function(c){c.put(e.request,clone);});',
     '    return res;',
