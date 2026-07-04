@@ -296,6 +296,33 @@
     @media(max-width:380px){.stu-sair-icon{display:block}.stu-sair-txt{display:none}}
     .stu-top > div:last-child{flex-shrink:0}
     .brand-grid{grid-template-columns:1fr!important}
+    /* ── Reforço geral: nada pode ficar cortado/invisível na vertical ── */
+    input,select,textarea,button{max-width:100%;min-width:0}
+    .day-head{flex-wrap:wrap}
+    .day-head input:not(.focus){width:100%}
+    .day-head input.focus{width:100%;flex:1 1 100%}
+    .ex-alts-wrap{min-width:0}
+    .ex-alts-wrap input{min-width:0;width:100%}
+    .client-head *{min-width:0}
+    .stat{min-width:0}
+    .grid{grid-template-columns:1fr}
+    /* Biblioteca de Movimentos */
+    .exlib-toolbar{flex-direction:column;align-items:stretch}
+    .exlib-toolbar input[type="text"],.exlib-toolbar select,.exlib-toolbar button{width:100%;min-width:0}
+    .exlib-grid{grid-template-columns:1fr}
+    /* Escolha do treino inicial da semana */
+    .wkstart-chips{gap:6px}
+    .wkstart-chip{flex:1 1 auto;text-align:center;padding:8px 10px}
+    /* Aviso de ciclo de aulas completo */
+    .aula-ciclo-warn{flex-wrap:wrap}
+    .aula-ciclo-btn,.aula-ciclo-manual{width:100%}
+    /* Cards de modelo e biblioteca não devem espremer o texto */
+    .tpl-card{flex-wrap:wrap}
+    .tpl-card-actions{width:100%}
+    .tpl-card-actions select{max-width:100%;flex:1 1 auto}
+    /* Registrar aula: linha de data retroativa não pode transbordar */
+    #aula_data_retro_wrap,.aula-quick{flex-wrap:wrap}
+    .aula-retro-hint{display:none}
   }
   .menu-toggle{display:none;background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px;cursor:pointer}
   /* ── Tonelagem & log de séries ────────────────────────── */
@@ -3499,7 +3526,7 @@ function buildAulasTab(c){
     return '<div class="aula-log-row">'      +'<div class="aula-dot '+e.tipo+'"></div>'      +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">'+lbl+'</div>'      +(e.obs?'<div style="font-size:11.5px;color:var(--text-faint)">'+esc(e.obs)+'</div>':'')      +(isRetro?'<div style="font-size:10.5px;color:var(--text-faint);margin-top:1px">retroativo</div>':'')      +'</div>'      +'<div style="font-size:12px;color:var(--text-faint);white-space:nowrap;margin-right:4px">'+dtFmt+'</div>'      +'<button data-idx="'+i+'" data-cid="'+c.id+'" onclick="desfazerAula(this.dataset.cid,+this.dataset.idx)" style="background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:5px" title="Remover">✕</button>'      +'</div>';
   }).join('');
   var hj=new Date().toISOString().slice(0,10);
-  return '<div class="panel">'    +'<div class="panel-title"><span class="dot"></span>Registrar aula rapidamente</div>'    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 12px;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border)">'    +'<span style="font-size:12px;color:var(--text-faint);font-weight:600;white-space:nowrap">📅 Data da aula:</span>'    +'<input type="date" id="aula_data_retro_'+c.id+'" value="'+hj+'" max="'+hj+'" '    +'style="flex:1;background:transparent;border:none;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;outline:none;min-width:0">'    +'<span style="font-size:11px;color:var(--text-faint);white-space:nowrap">← mude para registrar retroativo</span>'    +'</div>'    +'<div class="aula-quick">'
+  return '<div class="panel">'    +'<div class="panel-title"><span class="dot"></span>Registrar aula rapidamente</div>'    +'<div id="aula_data_retro_wrap" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 12px;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border)">'    +'<span style="font-size:12px;color:var(--text-faint);font-weight:600;white-space:nowrap">📅 Data da aula:</span>'    +'<input type="date" id="aula_data_retro_'+c.id+'" value="'+hj+'" max="'+hj+'" '    +'style="flex:1;background:transparent;border:none;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;outline:none;min-width:0">'    +'<span class="aula-retro-hint" style="font-size:11px;color:var(--text-faint);white-space:nowrap">← mude para registrar retroativo</span>'    +'</div>'    +'<div class="aula-quick">'
     +'<button class="aula-qbtn realizada" data-cid="'+c.id+'" onclick="registrarAula(this.dataset.cid,\'realizada\',false)"><span class="qbtn-icon">✓</span>Aula feita</button>'
     +(temRepo
       ?'<button class="aula-qbtn falta" data-cid="'+c.id+'" onclick="registrarAula(this.dataset.cid,\'falta\',true)"><span class="qbtn-icon">✗</span>Faltou (c/ repo)</button>'
