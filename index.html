@@ -64,6 +64,18 @@
   .tpl-card-actions .btn{font-size:11px;padding:5px 10px}
   .tpl-empty{text-align:center;padding:40px 20px;color:var(--text-faint);font-size:13px}
   .tpl-import-zone{border:2px dashed var(--line-soft);border-radius:10px;padding:18px;text-align:center;font-size:12px;color:var(--text-dim);cursor:pointer;transition:.15s}
+  .exlib-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+  .exlib-toolbar input[type="text"]{flex:1;min-width:180px}
+  .exlib-toolbar select{min-width:170px}
+  .exlib-group{margin-bottom:22px}
+  .exlib-group-title{font-size:12px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--line-soft)}
+  .exlib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+  .exlib-card{background:var(--surface);border:1px solid var(--line-soft);border-radius:10px;padding:11px 13px;cursor:pointer;transition:.15s}
+  .exlib-card:hover{border-color:var(--line)}
+  .exlib-card-name{font-size:13px;font-weight:700;color:var(--text)}
+  .exlib-card-custom{display:inline-block;margin-top:6px;font-size:10px;font-weight:700;color:var(--accent);background:rgba(200,242,80,.12);border-radius:5px;padding:2px 6px}
+  .exlib-empty{text-align:center;padding:40px 20px;color:var(--text-faint);font-size:13px}
+  .exlib-detail-pat{display:inline-block;font-size:12px;font-weight:800;color:var(--accent-ink);background:var(--accent);border-radius:7px;padding:4px 10px;margin:8px 0 4px}
   .tpl-import-zone:hover{border-color:var(--accent);color:var(--accent)}
   .sidebar-foot .avatar{background:var(--accent);color:var(--accent-ink)}
   .sidebar-foot b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
@@ -770,6 +782,7 @@
     <button class="nav-btn" onclick="goDashboard()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Painel</button>
     <button class="nav-btn" onclick="goAgenda()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agenda</button>
     <button class="nav-btn" onclick="goTemplates()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15" x2="13" y2="15"/></svg>Modelos</button>
+    <button class="nav-btn" onclick="goBiblioteca()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8M8 11h6"/></svg>Biblioteca</button>
     <button class="nav-btn" onclick="goMinhaMarca()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07M19.07 4.93A10 10 0 0 1 19.07 19.07M4.93 19.07A10 10 0 0 0 19.07 19.07"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>Minha Marca</button>
     <div class="nav-section">Alunos</div><div class="client-list" id="clientList"></div>
     <div id="nucleo-offline-badge"></div>
@@ -1494,8 +1507,46 @@ const VOL_MAP={
  calf:{"Panturrilha":1},
 };
 const NAME2PAT=(()=>{const m={};EX.forEach(x=>m[x.n]=x.p);return m;})();
+/* ============ Biblioteca de Movimentos (custom, por treinador) ============ */
+function _exLibKey(){return "nucleo_exlib_"+(trainer&&trainer.id?trainer.id:"default");}
+var _customExLibCache=null;
+function loadCustomExLib(){
+  if(_customExLibCache)return _customExLibCache;
+  try{_customExLibCache=JSON.parse(localStorage.getItem(_exLibKey())||"[]");}catch(e){_customExLibCache=[];}
+  return _customExLibCache;
+}
+function saveCustomExLib(list){_customExLibCache=list;try{localStorage.setItem(_exLibKey(),JSON.stringify(list));}catch(e){}}
+function findCustomExByName(name){
+  var n=(name||"").trim().toLowerCase();
+  if(!n)return null;
+  return loadCustomExLib().find(function(x){return x.n.toLowerCase()===n;})||null;
+}
+function addCustomExercise(name,pat){
+  name=(name||"").trim();
+  if(!name||!pat)return {ok:false,reason:"Preencha o nome e o grupo muscular."};
+  if(NAME2PAT[name]||findCustomExByName(name))return {ok:false,reason:"Já existe um movimento com esse nome na biblioteca."};
+  var list=[{n:name,p:pat,addedAt:new Date().toISOString()}].concat(loadCustomExLib());
+  saveCustomExLib(list);
+  return {ok:true};
+}
+function removeCustomExercise(name){
+  saveCustomExLib(loadCustomExLib().filter(function(x){return x.n!==name;}));
+}
+function allExercisesLib(){
+  var out=EX.map(function(x){return {n:x.n,p:x.p,eqs:x.eqs,custom:false};});
+  var seen={};out.forEach(function(x){seen[x.n.toLowerCase()]=1;});
+  loadCustomExLib().forEach(function(x){
+    if(!seen[x.n.toLowerCase()]){out.push({n:x.n,p:x.p,custom:true});seen[x.n.toLowerCase()]=1;}
+  });
+  return out.sort(function(a,b){return a.n.localeCompare(b.n,"pt-BR");});
+}
+function exLibDatalistHTML(){
+  return '<datalist id="exlib_datalist">'+allExercisesLib().map(function(x){return '<option value="'+esc(x.n)+'">';}).join("")+'</datalist>';
+}
 function patOf(ex){
   if(ex.pat)return ex.pat;
+  var custom=findCustomExByName(ex.name);
+  if(custom)return custom.p;
   var np=NAME2PAT[ex.name];if(np)return np;
   // Fallback por keyword no nome — cobre exercícios editados/IA com nomes diferentes
   var n=(ex.name||'').toLowerCase();
@@ -2712,14 +2763,16 @@ document.addEventListener('click',function(e){
 });
 function _getExAlts(exName,pat,clientEqs){
   var eqs=(clientEqs||[]);
-  var p=pat||(NAME2PAT[exName])||patOf({name:exName});
+  var p=pat||patOf({name:exName});
   if(!p)return [];
-  return EX.filter(function(x){
+  var builtinAlts=EX.filter(function(x){
     if(x.n===exName)return false; // não mostrar o mesmo
     if(x.p!==p)return false; // mesmo padrão
     if(!eqs.length)return true; // sem filtro de equipamento
     return x.eqs.some(function(eq){return eqs.indexOf(eq)>-1;});
   }).map(function(x){return x.n;});
+  var customAlts=loadCustomExLib().filter(function(x){return x.p===p&&x.n!==exName;}).map(function(x){return x.n;});
+  return builtinAlts.concat(customAlts);
 }
 function toggleExAlts(di,ei,btn){
   _closeAllAltDDs();
@@ -2745,7 +2798,7 @@ function applyExAlt(di,ei,newName){
   var c=curProg();if(!c)return;
   var ex=c.program.days[di].exercises[ei];if(!ex)return;
   ex.name=newName;
-  ex.pat=NAME2PAT[newName]||patOf({name:newName})||null;
+  ex.pat=patOf({name:newName})||null;
   scheduleSave();
   renderProgram(c.program);
   _closeAllAltDDs();
@@ -2854,6 +2907,91 @@ function goTemplates(){
   document.getElementById("sidebar").classList.remove("open");
   renderSidebar();
   document.getElementById("content").innerHTML=buildTemplatesPanel();
+}
+
+/* ============ Biblioteca de Movimentos (UI) ============ */
+var _exLibSearch="",_exLibFilter="";
+function buildBibliotecaHTML(){
+  var lib=allExercisesLib();
+  var q=_exLibSearch.trim().toLowerCase();
+  if(q)lib=lib.filter(function(x){return x.n.toLowerCase().indexOf(q)>-1;});
+  if(_exLibFilter)lib=lib.filter(function(x){return x.p===_exLibFilter;});
+  var groups={};
+  lib.forEach(function(x){(groups[x.p||"_"]=groups[x.p||"_"]||[]).push(x);});
+  var order=Object.keys(PAT_LABEL);
+  var filterOpts='<option value="">Todos os grupos</option>'+order.map(function(p){return '<option value="'+p+'"'+(p===_exLibFilter?' selected':'')+'>'+esc(PAT_LABEL[p])+'</option>';}).join("");
+  var sectionsHTML=order.filter(function(p){return groups[p]&&groups[p].length;}).map(function(p){
+    var cards=groups[p].map(function(x){
+      return '<div class="exlib-card" onclick="openExDetail(\''+x.n.replace(/'/g,"\\'")+'\')"><div class="exlib-card-name">'+esc(x.n)+'</div>'
+        +(x.custom?'<span class="exlib-card-custom">Adicionado por você</span>':'')+'</div>';
+    }).join("");
+    return '<div class="exlib-group"><div class="exlib-group-title">'+esc(PAT_LABEL[p]||p)+' · '+groups[p].length+'</div><div class="exlib-grid">'+cards+'</div></div>';
+  }).join("");
+  var emptyMsg=lib.length?"":'<div class="exlib-empty">🔍<br><br>Nenhum movimento encontrado'+(q?' para "'+esc(_exLibSearch)+'"':'')+'.</div>';
+  return '<div class="page-head"><h2>Biblioteca de Movimentos</h2><p>Todos os exercícios que você tem à disposição, organizados por grupo muscular prioritário. Adicione movimentos que não estão na lista — o programa passa a reconhecê-los automaticamente.</p></div>'
+    +'<div class="exlib-toolbar">'
+    +'<input type="text" class="inp" placeholder="Buscar movimento..." value="'+esc(_exLibSearch)+'" oninput="_exLibSearch=this.value;renderExLib()">'
+    +'<select class="inp" onchange="_exLibFilter=this.value;renderExLib()">'+filterOpts+'</select>'
+    +'<button class="btn accent" onclick="openAddExercise()">+ Adicionar movimento</button>'
+    +'</div>'
+    +emptyMsg+sectionsHTML;
+}
+function renderExLib(){
+  var el=document.getElementById("content");
+  if(el)el.innerHTML=buildBibliotecaHTML();
+}
+function goBiblioteca(){
+  currentId=null;
+  _exLibSearch="";_exLibFilter="";
+  document.getElementById("crumb").innerHTML="Biblioteca de Movimentos";
+  document.getElementById("sidebar").classList.remove("open");
+  renderSidebar();
+  document.getElementById("content").innerHTML=buildBibliotecaHTML();
+}
+function openExDetail(name){
+  var lib=allExercisesLib();
+  var x=lib.find(function(e){return e.n===name;});
+  if(!x)return;
+  var eqLabels={full:"Academia completa",db:"Halteres",bw:"Peso corporal",func:"Funcional",home:"Casa (equip. mínimo)"};
+  var eqsHTML=(x.eqs&&x.eqs.length)?'<div style="margin-top:10px;font-size:12px;color:var(--text-dim)">Equipamento: '+x.eqs.map(function(e){return esc(eqLabels[e]||e);}).join(", ")+'</div>':"";
+  document.getElementById("modal").innerHTML=
+    '<div class="modal-head"><h3>'+esc(x.n)+'</h3><p>Grupo muscular prioritário deste movimento.</p></div>'
+    +'<div class="form-section"><span class="exlib-detail-pat">'+esc(PAT_LABEL[x.p]||x.p||"—")+'</span>'
+    +(x.custom?'<div style="margin-top:8px;font-size:11.5px;color:var(--text-faint)">Movimento adicionado por você.</div>':'<div style="margin-top:8px;font-size:11.5px;color:var(--text-faint)">Movimento da biblioteca padrão do FitConnect.</div>')
+    +eqsHTML+'</div>'
+    +'<div class="modal-foot">'
+    +(x.custom?'<button class="btn ghost" style="color:var(--danger)" onclick="confirmRemoveExercise(\''+x.n.replace(/'/g,"\\'")+'\')">🗑 Remover</button>':'<span></span>')
+    +'<button class="btn accent" onclick="closeModal()">Fechar</button></div>';
+  document.getElementById("overlay").classList.add("open");
+}
+function confirmRemoveExercise(name){
+  if(!confirm('Remover "'+name+'" da sua biblioteca? Exercícios já usados em programas não serão afetados.'))return;
+  removeCustomExercise(name);
+  closeModal();
+  toast("Movimento removido");
+  renderExLib();
+}
+function openAddExercise(){
+  var opts=Object.keys(PAT_LABEL).map(function(p){return '<option value="'+p+'">'+esc(PAT_LABEL[p])+'</option>';}).join("");
+  document.getElementById("modal").innerHTML=
+    '<div class="modal-head"><h3>Adicionar movimento</h3><p>Diga qual grupo muscular esse exercício prioriza — o programa vai usar isso automaticamente ao montar e calcular volume.</p></div>'
+    +'<div class="form-section"><div class="fgrid">'
+    +'<div class="fl full"><label>Nome do movimento *</label><input id="nex_name" placeholder="Ex.: Supino reto na máquina Hammer"></div>'
+    +'<div class="fl full"><label>Grupo muscular prioritário *</label><select id="nex_pat">'+opts+'</select></div>'
+    +'</div></div>'
+    +'<div class="modal-foot"><span class="err-hint" id="nexErr"></span>'
+    +'<button class="btn ghost" onclick="closeModal()">Cancelar</button>'
+    +'<button class="btn accent" onclick="saveNewExercise()">Adicionar</button></div>';
+  document.getElementById("overlay").classList.add("open");
+}
+function saveNewExercise(){
+  var name=(document.getElementById("nex_name").value||"").trim();
+  var pat=document.getElementById("nex_pat").value;
+  var r=addCustomExercise(name,pat);
+  if(!r.ok){document.getElementById("nexErr").textContent=r.reason;return;}
+  closeModal();
+  toast('"'+name+'" adicionado à biblioteca!');
+  if(document.getElementById("crumb")&&document.getElementById("crumb").innerHTML==="Biblioteca de Movimentos")renderExLib();
 }
 
 
@@ -3754,7 +3892,7 @@ function editableDaysHTML(p){
       <button class="day-x" title="Remover treino" onclick="delDay(${di})">✕</button></div>
     <table><thead><tr><th style="width:26%">Exercício</th><th>Séries</th><th>Reps</th><th>Desc.</th><th>RPE</th><th>Método</th><th style="width:14%">Obs.</th><th title="Unilateral (×2 tonelagem)">×2</th><th style="width:60px"></th></tr></thead>
     <tbody>${(d.exercises||[]).map((ex,ei)=>`<tr>
-      <td class="ex"><div class="ex-alts-wrap"><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="name" value="${esc(ex.name)}" style="width:calc(100% - 36px)"><button class="ex-alts-btn" title="Ver exercícios alternativos" onclick="toggleExAlts(${di},${ei},this)">≈↕</button><div class="ex-alts-dd" id="alts_dd_${di}_${ei}"></div></div></td>
+      <td class="ex"><div class="ex-alts-wrap"><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="name" value="${esc(ex.name)}" list="exlib_datalist" style="width:calc(100% - 36px)"><button class="ex-alts-btn" title="Ver exercícios alternativos" onclick="toggleExAlts(${di},${ei},this)">≈↕</button><div class="ex-alts-dd" id="alts_dd_${di}_${ei}"></div></div></td>
       <td><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="sets" value="${esc(ex.sets)}"></td>
       <td><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="reps" value="${esc(ex.reps)}"></td>
       <td><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="rest" value="${esc(ex.rest)}"></td>
@@ -3768,7 +3906,7 @@ function editableDaysHTML(p){
         <button class="row-x" title="Séries preparatórias" onclick="togglePrepPanel(${di},${ei})" style="color:var(--warn)">🔥</button>
         <button class="row-x" title="Remover" onclick="delEx(${di},${ei})">✕</button>
       </td></tr><tr id="preprow_${di}_${ei}" style="display:${(ex.prepSets&&ex.prepSets.length)?'table-row':'none'}"><td colspan="8" style="padding:0 8px 8px"><div class="prep-editor" id="prepeditor_${di}_${ei}"><div class="prep-editor-head">🔥 Séries preparatórias</div>${buildPrepEditorRows(di,ei,ex.prepSets||[])}<button class="prep-tag-btn" onclick="addPrepSet(${di},${ei})" style="margin-top:6px">+ Série prep.</button></div></td></tr>`).join("")}</tbody></table>
-    <div class="day-foot"><button class="btn ghost sm" onclick="addEx(${di})">+ Exercício</button></div>${buildCardioSectionHTML(di)}</div>`).join("");
+    <div class="day-foot"><button class="btn ghost sm" onclick="addEx(${di})">+ Exercício</button></div>${buildCardioSectionHTML(di)}</div>`).join("")+exLibDatalistHTML();
 }
 function moveEx(di,ei,dir){
   var c=curProg();if(!c)return;
@@ -5141,7 +5279,7 @@ document.addEventListener("input",e=>{
   const t=e.target;if(!t.dataset)return;const c=curProg();if(!c)return;
   if(t.dataset.pk){c.program[t.dataset.pk]=t.value;scheduleSave();return;}
   if(t.dataset.dk!=null&&t.dataset.d!=null){c.program.days[+t.dataset.d][t.dataset.dk]=t.value;scheduleSave();if(t.dataset.dk==="name")renderSidebar();return;}
-  if(t.dataset.k&&t.dataset.d!=null&&t.dataset.i!=null){var _ex=c.program.days[+t.dataset.d].exercises[+t.dataset.i];var _val=t.type==="checkbox"?t.checked:t.value;_ex[t.dataset.k]=_val;if(t.dataset.k==="name"){_ex.pat=NAME2PAT[t.value]||patOf({name:t.value})||null;}scheduleSave();if(t.dataset.k==="sets"||t.dataset.k==="name")refreshAnalytics();return;}
+  if(t.dataset.k&&t.dataset.d!=null&&t.dataset.i!=null){var _ex=c.program.days[+t.dataset.d].exercises[+t.dataset.i];var _val=t.type==="checkbox"?t.checked:t.value;_ex[t.dataset.k]=_val;if(t.dataset.k==="name"){_ex.pat=patOf({name:t.value})||null;}scheduleSave();if(t.dataset.k==="sets"||t.dataset.k==="name")refreshAnalytics();return;}
 });
 
 /* ============ Séries preparatórias ============ */
