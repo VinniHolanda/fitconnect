@@ -64,18 +64,6 @@
   .tpl-card-actions .btn{font-size:11px;padding:5px 10px}
   .tpl-empty{text-align:center;padding:40px 20px;color:var(--text-faint);font-size:13px}
   .tpl-import-zone{border:2px dashed var(--line-soft);border-radius:10px;padding:18px;text-align:center;font-size:12px;color:var(--text-dim);cursor:pointer;transition:.15s}
-  .exlib-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
-  .exlib-toolbar input[type="text"]{flex:1;min-width:180px}
-  .exlib-toolbar select{min-width:170px}
-  .exlib-group{margin-bottom:22px}
-  .exlib-group-title{font-size:12px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--line-soft)}
-  .exlib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
-  .exlib-card{background:var(--surface);border:1px solid var(--line-soft);border-radius:10px;padding:11px 13px;cursor:pointer;transition:.15s}
-  .exlib-card:hover{border-color:var(--line)}
-  .exlib-card-name{font-size:13px;font-weight:700;color:var(--text)}
-  .exlib-card-custom{display:inline-block;margin-top:6px;font-size:10px;font-weight:700;color:var(--accent);background:rgba(200,242,80,.12);border-radius:5px;padding:2px 6px}
-  .exlib-empty{text-align:center;padding:40px 20px;color:var(--text-faint);font-size:13px}
-  .exlib-detail-pat{display:inline-block;font-size:12px;font-weight:800;color:var(--accent-ink);background:var(--accent);border-radius:7px;padding:4px 10px;margin:8px 0 4px}
   .tpl-import-zone:hover{border-color:var(--accent);color:var(--accent)}
   .sidebar-foot .avatar{background:var(--accent);color:var(--accent-ink)}
   .sidebar-foot b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
@@ -296,33 +284,6 @@
     @media(max-width:380px){.stu-sair-icon{display:block}.stu-sair-txt{display:none}}
     .stu-top > div:last-child{flex-shrink:0}
     .brand-grid{grid-template-columns:1fr!important}
-    /* ── Reforço geral: nada pode ficar cortado/invisível na vertical ── */
-    input,select,textarea,button{max-width:100%;min-width:0}
-    .day-head{flex-wrap:wrap}
-    .day-head input:not(.focus){width:100%}
-    .day-head input.focus{width:100%;flex:1 1 100%}
-    .ex-alts-wrap{min-width:0}
-    .ex-alts-wrap input{min-width:0;width:100%}
-    .client-head *{min-width:0}
-    .stat{min-width:0}
-    .grid{grid-template-columns:1fr}
-    /* Biblioteca de Movimentos */
-    .exlib-toolbar{flex-direction:column;align-items:stretch}
-    .exlib-toolbar input[type="text"],.exlib-toolbar select,.exlib-toolbar button{width:100%;min-width:0}
-    .exlib-grid{grid-template-columns:1fr}
-    /* Escolha do treino inicial da semana */
-    .wkstart-chips{gap:6px}
-    .wkstart-chip{flex:1 1 auto;text-align:center;padding:8px 10px}
-    /* Aviso de ciclo de aulas completo */
-    .aula-ciclo-warn{flex-wrap:wrap}
-    .aula-ciclo-btn,.aula-ciclo-manual{width:100%}
-    /* Cards de modelo e biblioteca não devem espremer o texto */
-    .tpl-card{flex-wrap:wrap}
-    .tpl-card-actions{width:100%}
-    .tpl-card-actions select{max-width:100%;flex:1 1 auto}
-    /* Registrar aula: linha de data retroativa não pode transbordar */
-    #aula_data_retro_wrap,.aula-quick{flex-wrap:wrap}
-    .aula-retro-hint{display:none}
   }
   .menu-toggle{display:none;background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px;cursor:pointer}
   /* ── Tonelagem & log de séries ────────────────────────── */
@@ -751,20 +712,6 @@
 .aula-dot.realizada{background:var(--accent)}
 .aula-dot.falta{background:var(--danger)}
 .aula-dot.reposicao{background:var(--warn)}
-.aula-dot.ciclo{background:var(--text-dim)}
-.aula-ciclo-warn{display:flex;align-items:flex-start;gap:10px;background:rgba(255,198,88,.1);border:1.5px solid rgba(255,198,88,.3);border-radius:12px;padding:12px 14px;margin-bottom:16px}
-.aula-ciclo-warn .aci-icon{font-size:18px;line-height:1;margin-top:1px}
-.aula-ciclo-warn .aci-body{flex:1;font-size:12.5px;color:var(--text-dim);line-height:1.5}
-.aula-ciclo-warn .aci-body b{color:var(--warn)}
-.aula-ciclo-btn{margin-top:8px;background:var(--warn);color:var(--accent-ink);border:none;border-radius:8px;padding:8px 14px;font-family:var(--body);font-weight:800;font-size:12px;cursor:pointer}
-.aula-ciclo-manual{background:none;border:1.5px solid var(--line-soft);color:var(--text-faint);border-radius:8px;padding:6px 12px;font-family:var(--body);font-weight:700;font-size:11.5px;cursor:pointer;margin-top:8px}
-.aula-ciclo-manual:hover{color:var(--text-dim);border-color:var(--line)}
-.wkstart-picker{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:12px;padding:12px 14px;margin-bottom:14px}
-.wkstart-label{font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:8px}
-.wkstart-chips{display:flex;gap:8px;flex-wrap:wrap}
-.wkstart-chip{background:var(--surface);border:1.5px solid var(--line-soft);color:var(--text-dim);border-radius:8px;padding:7px 13px;font-family:var(--body);font-weight:700;font-size:12.5px;cursor:pointer}
-.wkstart-chip:hover{border-color:var(--line)}
-.wkstart-chip.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 /* ── Agenda ────────────────────────────────────────────── */
 .agenda-week{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:18px}
 @media(max-width:700px){.agenda-week{grid-template-columns:1fr}}
@@ -809,7 +756,6 @@
     <button class="nav-btn" onclick="goDashboard()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Painel</button>
     <button class="nav-btn" onclick="goAgenda()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agenda</button>
     <button class="nav-btn" onclick="goTemplates()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15" x2="13" y2="15"/></svg>Modelos</button>
-    <button class="nav-btn" onclick="goBiblioteca()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8M8 11h6"/></svg>Biblioteca</button>
     <button class="nav-btn" onclick="goMinhaMarca()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07M19.07 4.93A10 10 0 0 1 19.07 19.07M4.93 19.07A10 10 0 0 0 19.07 19.07"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>Minha Marca</button>
     <div class="nav-section">Alunos</div><div class="client-list" id="clientList"></div>
     <div id="nucleo-offline-badge"></div>
@@ -1487,7 +1433,7 @@ function buildProgram(c,extra){
     });
   }
   const goalShort=c.goal.split("(")[0].trim().toLowerCase();
-  const summary=`Programa de ${split.days.length} treinos no formato ${SPLIT_LABEL[split.type]}, montado para ${c.name.split(" ")[0]} (${c.level.toLowerCase()}) com foco em ${goalShort}, usando ${c.eq.toLowerCase()}. Séries e repetições calibradas para o objetivo${conservative?", em versão CONSERVADORA por sinalização no PAR-Q (cargas leves a moderadas, sem exercícios de alta sobrecarga axial)":""}${avoid.size?". Exercícios contraindicados pelas limitações relatadas foram automaticamente substituídos":""}.`;
+  const summary=`Programa de ${split.days.length} dias no formato ${SPLIT_LABEL[split.type]}, montado para ${c.name.split(" ")[0]} (${c.level.toLowerCase()}) com foco em ${goalShort}, usando ${c.eq.toLowerCase()}. Séries e repetições calibradas para o objetivo${conservative?", em versão CONSERVADORA por sinalização no PAR-Q (cargas leves a moderadas, sem exercícios de alta sobrecarga axial)":""}${avoid.size?". Exercícios contraindicados pelas limitações relatadas foram automaticamente substituídos":""}.`;
   const principles=["Sobrecarga progressiva","Volume calibrado por grupo (alvo semanal)","Volume ajustado ao nível "+c.level.toLowerCase(),"Seleção por equipamento ("+c.eq.toLowerCase()+")",SPLIT_LABEL[split.type]];
   if(avoid.size) principles.push("Filtro de segurança: "+[...avoid].join(", "));
   const warnings=buildWarnings(c,avoid,conservative);
@@ -1534,46 +1480,8 @@ const VOL_MAP={
  calf:{"Panturrilha":1},
 };
 const NAME2PAT=(()=>{const m={};EX.forEach(x=>m[x.n]=x.p);return m;})();
-/* ============ Biblioteca de Movimentos (custom, por treinador) ============ */
-function _exLibKey(){return "nucleo_exlib_"+(trainer&&trainer.id?trainer.id:"default");}
-var _customExLibCache=null;
-function loadCustomExLib(){
-  if(_customExLibCache)return _customExLibCache;
-  try{_customExLibCache=JSON.parse(localStorage.getItem(_exLibKey())||"[]");}catch(e){_customExLibCache=[];}
-  return _customExLibCache;
-}
-function saveCustomExLib(list){_customExLibCache=list;try{localStorage.setItem(_exLibKey(),JSON.stringify(list));}catch(e){}}
-function findCustomExByName(name){
-  var n=(name||"").trim().toLowerCase();
-  if(!n)return null;
-  return loadCustomExLib().find(function(x){return x.n.toLowerCase()===n;})||null;
-}
-function addCustomExercise(name,pat){
-  name=(name||"").trim();
-  if(!name||!pat)return {ok:false,reason:"Preencha o nome e o grupo muscular."};
-  if(NAME2PAT[name]||findCustomExByName(name))return {ok:false,reason:"Já existe um movimento com esse nome na biblioteca."};
-  var list=[{n:name,p:pat,addedAt:new Date().toISOString()}].concat(loadCustomExLib());
-  saveCustomExLib(list);
-  return {ok:true};
-}
-function removeCustomExercise(name){
-  saveCustomExLib(loadCustomExLib().filter(function(x){return x.n!==name;}));
-}
-function allExercisesLib(){
-  var out=EX.map(function(x){return {n:x.n,p:x.p,eqs:x.eqs,custom:false};});
-  var seen={};out.forEach(function(x){seen[x.n.toLowerCase()]=1;});
-  loadCustomExLib().forEach(function(x){
-    if(!seen[x.n.toLowerCase()]){out.push({n:x.n,p:x.p,custom:true});seen[x.n.toLowerCase()]=1;}
-  });
-  return out.sort(function(a,b){return a.n.localeCompare(b.n,"pt-BR");});
-}
-function exLibDatalistHTML(){
-  return '<datalist id="exlib_datalist">'+allExercisesLib().map(function(x){return '<option value="'+esc(x.n)+'">';}).join("")+'</datalist>';
-}
 function patOf(ex){
   if(ex.pat)return ex.pat;
-  var custom=findCustomExByName(ex.name);
-  if(custom)return custom.p;
   var np=NAME2PAT[ex.name];if(np)return np;
   // Fallback por keyword no nome — cobre exercícios editados/IA com nomes diferentes
   var n=(ex.name||'').toLowerCase();
@@ -1917,7 +1825,6 @@ function showStudentApp(){
   document.getElementById("authView").style.display="none";
   document.getElementById("appView").style.display="none";
   document.getElementById("studentView").style.display="block";
-  var _sp=document.getElementById("splash");if(_sp){_sp.classList.add("fade");setTimeout(function(){_sp.style.display="none";},500);}
   stuWeek=0;stuDay=0;
   stuProfileData=JSON.parse(localStorage.getItem('nucleo_profile_'+(sClient&&sClient.id||'guest'))||'null');
   /* solicitar permissão de notificação e agendar lembrete */
@@ -2545,7 +2452,7 @@ function renderStudentHome(){
   const _logAll=c.rpeLog||[];
   const _days2=c.program.days||[];
   const _doneThisWeek=_days2.filter((_,di)=>_logAll.some(s=>(+s.week||0)===stuWeek&&(s.dayName||"")===((_days2[di])||{}).name)).length;
-  const _isNewWeek=!_next.allDone&&stuWeek>0&&_logAll.filter(s=>(+s.week||0)===stuWeek).length===0;
+  const _isNewWeek=!_next.allDone&&stuDay===0&&stuWeek>0&&_logAll.filter(s=>(+s.week||0)===stuWeek).length===0;
   const _exRowsAuto=(_dayAuto.exercises||[]).map(ex=>`<tr><td class="ro-ex cell-ro">${esc(ex.name)}</td><td class="cell-ro" style="color:var(--text-faint)">${esc(ex.notes||PAT_LABEL[ex.pat]||"—")}</td><td class="cell-ro">${esc(ex.sets)}</td><td class="cell-ro">${esc(ex.reps)}</td><td class="cell-ro">${esc(ex.rest)}</td><td class="cell-ro">RPE ${esc(ex.rpe)}</td></tr>`).join("");
   const _back=`<button class="stu-back-btn" onclick="setStuTab('home')">← Início</button>`;
   let _stuContent='';
@@ -2570,7 +2477,6 @@ function renderStudentHome(){
         <div><div style="font-size:13px;font-weight:700;color:var(--text-faint);margin-bottom:2px">S${stuWeek+1} de ${meso.weeks.length} · ${_doneThisWeek} de ${_days2.length} sessões nesta semana</div>
         <div class="stu-week-bar" style="max-width:200px">${_weekProgressDots}</div></div>
       </div>
-      ${weekStartPickerHTML(c,_next,_doneThisWeek)}
       <div class="wk-head" style="margin-bottom:12px"><div><b>${esc(_dayAuto.name||'')}</b><span class="wk-meta">${esc(_wkAuto.f||'')} · alvo RPE ${esc(_wkAuto.rpe||'')} · ${esc(_wkAuto.load||"")}</span></div><div class="wk-how">${esc(_wkAuto.how||"")}</div></div>
       <table><thead><tr><th style="width:34%">Exercício</th><th>Foco</th><th>Séries</th><th>Reps</th><th>Descanso</th><th>Intensidade</th></tr></thead><tbody>${_exRowsAuto}</tbody></table>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
@@ -2790,16 +2696,14 @@ document.addEventListener('click',function(e){
 });
 function _getExAlts(exName,pat,clientEqs){
   var eqs=(clientEqs||[]);
-  var p=pat||patOf({name:exName});
+  var p=pat||(NAME2PAT[exName])||patOf({name:exName});
   if(!p)return [];
-  var builtinAlts=EX.filter(function(x){
+  return EX.filter(function(x){
     if(x.n===exName)return false; // não mostrar o mesmo
     if(x.p!==p)return false; // mesmo padrão
     if(!eqs.length)return true; // sem filtro de equipamento
     return x.eqs.some(function(eq){return eqs.indexOf(eq)>-1;});
   }).map(function(x){return x.n;});
-  var customAlts=loadCustomExLib().filter(function(x){return x.p===p&&x.n!==exName;}).map(function(x){return x.n;});
-  return builtinAlts.concat(customAlts);
 }
 function toggleExAlts(di,ei,btn){
   _closeAllAltDDs();
@@ -2825,7 +2729,7 @@ function applyExAlt(di,ei,newName){
   var c=curProg();if(!c)return;
   var ex=c.program.days[di].exercises[ei];if(!ex)return;
   ex.name=newName;
-  ex.pat=patOf({name:newName})||null;
+  ex.pat=NAME2PAT[newName]||patOf({name:newName})||null;
   scheduleSave();
   renderProgram(c.program);
   _closeAllAltDDs();
@@ -2934,91 +2838,6 @@ function goTemplates(){
   document.getElementById("sidebar").classList.remove("open");
   renderSidebar();
   document.getElementById("content").innerHTML=buildTemplatesPanel();
-}
-
-/* ============ Biblioteca de Movimentos (UI) ============ */
-var _exLibSearch="",_exLibFilter="";
-function buildBibliotecaHTML(){
-  var lib=allExercisesLib();
-  var q=_exLibSearch.trim().toLowerCase();
-  if(q)lib=lib.filter(function(x){return x.n.toLowerCase().indexOf(q)>-1;});
-  if(_exLibFilter)lib=lib.filter(function(x){return x.p===_exLibFilter;});
-  var groups={};
-  lib.forEach(function(x){(groups[x.p||"_"]=groups[x.p||"_"]||[]).push(x);});
-  var order=Object.keys(PAT_LABEL);
-  var filterOpts='<option value="">Todos os grupos</option>'+order.map(function(p){return '<option value="'+p+'"'+(p===_exLibFilter?' selected':'')+'>'+esc(PAT_LABEL[p])+'</option>';}).join("");
-  var sectionsHTML=order.filter(function(p){return groups[p]&&groups[p].length;}).map(function(p){
-    var cards=groups[p].map(function(x){
-      return '<div class="exlib-card" onclick="openExDetail(\''+x.n.replace(/'/g,"\\'")+'\')"><div class="exlib-card-name">'+esc(x.n)+'</div>'
-        +(x.custom?'<span class="exlib-card-custom">Adicionado por você</span>':'')+'</div>';
-    }).join("");
-    return '<div class="exlib-group"><div class="exlib-group-title">'+esc(PAT_LABEL[p]||p)+' · '+groups[p].length+'</div><div class="exlib-grid">'+cards+'</div></div>';
-  }).join("");
-  var emptyMsg=lib.length?"":'<div class="exlib-empty">🔍<br><br>Nenhum movimento encontrado'+(q?' para "'+esc(_exLibSearch)+'"':'')+'.</div>';
-  return '<div class="page-head"><h2>Biblioteca de Movimentos</h2><p>Todos os exercícios que você tem à disposição, organizados por grupo muscular prioritário. Adicione movimentos que não estão na lista — o programa passa a reconhecê-los automaticamente.</p></div>'
-    +'<div class="exlib-toolbar">'
-    +'<input type="text" class="inp" placeholder="Buscar movimento..." value="'+esc(_exLibSearch)+'" oninput="_exLibSearch=this.value;renderExLib()">'
-    +'<select class="inp" onchange="_exLibFilter=this.value;renderExLib()">'+filterOpts+'</select>'
-    +'<button class="btn accent" onclick="openAddExercise()">+ Adicionar movimento</button>'
-    +'</div>'
-    +emptyMsg+sectionsHTML;
-}
-function renderExLib(){
-  var el=document.getElementById("content");
-  if(el)el.innerHTML=buildBibliotecaHTML();
-}
-function goBiblioteca(){
-  currentId=null;
-  _exLibSearch="";_exLibFilter="";
-  document.getElementById("crumb").innerHTML="Biblioteca de Movimentos";
-  document.getElementById("sidebar").classList.remove("open");
-  renderSidebar();
-  document.getElementById("content").innerHTML=buildBibliotecaHTML();
-}
-function openExDetail(name){
-  var lib=allExercisesLib();
-  var x=lib.find(function(e){return e.n===name;});
-  if(!x)return;
-  var eqLabels={full:"Academia completa",db:"Halteres",bw:"Peso corporal",func:"Funcional",home:"Casa (equip. mínimo)"};
-  var eqsHTML=(x.eqs&&x.eqs.length)?'<div style="margin-top:10px;font-size:12px;color:var(--text-dim)">Equipamento: '+x.eqs.map(function(e){return esc(eqLabels[e]||e);}).join(", ")+'</div>':"";
-  document.getElementById("modal").innerHTML=
-    '<div class="modal-head"><h3>'+esc(x.n)+'</h3><p>Grupo muscular prioritário deste movimento.</p></div>'
-    +'<div class="form-section"><span class="exlib-detail-pat">'+esc(PAT_LABEL[x.p]||x.p||"—")+'</span>'
-    +(x.custom?'<div style="margin-top:8px;font-size:11.5px;color:var(--text-faint)">Movimento adicionado por você.</div>':'<div style="margin-top:8px;font-size:11.5px;color:var(--text-faint)">Movimento da biblioteca padrão do FitConnect.</div>')
-    +eqsHTML+'</div>'
-    +'<div class="modal-foot">'
-    +(x.custom?'<button class="btn ghost" style="color:var(--danger)" onclick="confirmRemoveExercise(\''+x.n.replace(/'/g,"\\'")+'\')">🗑 Remover</button>':'<span></span>')
-    +'<button class="btn accent" onclick="closeModal()">Fechar</button></div>';
-  document.getElementById("overlay").classList.add("open");
-}
-function confirmRemoveExercise(name){
-  if(!confirm('Remover "'+name+'" da sua biblioteca? Exercícios já usados em programas não serão afetados.'))return;
-  removeCustomExercise(name);
-  closeModal();
-  toast("Movimento removido");
-  renderExLib();
-}
-function openAddExercise(){
-  var opts=Object.keys(PAT_LABEL).map(function(p){return '<option value="'+p+'">'+esc(PAT_LABEL[p])+'</option>';}).join("");
-  document.getElementById("modal").innerHTML=
-    '<div class="modal-head"><h3>Adicionar movimento</h3><p>Diga qual grupo muscular esse exercício prioriza — o programa vai usar isso automaticamente ao montar e calcular volume.</p></div>'
-    +'<div class="form-section"><div class="fgrid">'
-    +'<div class="fl full"><label>Nome do movimento *</label><input id="nex_name" placeholder="Ex.: Supino reto na máquina Hammer"></div>'
-    +'<div class="fl full"><label>Grupo muscular prioritário *</label><select id="nex_pat">'+opts+'</select></div>'
-    +'</div></div>'
-    +'<div class="modal-foot"><span class="err-hint" id="nexErr"></span>'
-    +'<button class="btn ghost" onclick="closeModal()">Cancelar</button>'
-    +'<button class="btn accent" onclick="saveNewExercise()">Adicionar</button></div>';
-  document.getElementById("overlay").classList.add("open");
-}
-function saveNewExercise(){
-  var name=(document.getElementById("nex_name").value||"").trim();
-  var pat=document.getElementById("nex_pat").value;
-  var r=addCustomExercise(name,pat);
-  if(!r.ok){document.getElementById("nexErr").textContent=r.reason;return;}
-  closeModal();
-  toast('"'+name+'" adicionado à biblioteca!');
-  if(document.getElementById("crumb")&&document.getElementById("crumb").innerHTML==="Biblioteca de Movimentos")renderExLib();
 }
 
 
@@ -3293,7 +3112,7 @@ function goDashboard(){
   const withProg=clients.filter(c=>c.program).length,flags=clients.filter(parqFlag).length;
   const inactivePanel=buildInactivePanel();
   document.getElementById("content").innerHTML=`
-    <div class="page-head"><h2>Fala, treinador ${esc((trainer.name||'').split(' ')[0])}.</h2>
+    <div class="page-head"><h2>Bom treino, ${esc((trainer.name||'').split(' ')[0])}.</h2>
     <p>Cadastre o aluno com a ficha completa (dados, PAR-Q e anamnese) e o motor gera um treino na hora, de acordo com objetivo, nível, equipamento e limitações. Tudo grátis e salvo na sua conta.</p></div>
     <div class="stats"><div class="stat"><div class="n accent">${clients.length}</div><div class="l">Alunos cadastrados</div></div>
     <div class="stat"><div class="n">${withProg}</div><div class="l">Com treino montado</div></div>
@@ -3476,41 +3295,23 @@ function renderTrainerBody(cl){
   }
 }
 /* ============ Controle de Aulas ============ */
-function dateStartTs(dataStr){
-  var d=new Date((dataStr||'')+'T00:00:00');
-  return isNaN(d.getTime())?0:d.getTime();
-}
-function eventTs(e){
-  return typeof e.ts==='number'?e.ts:dateStartTs(e.data);
-}
-function currentCicloInicio(c){
-  var log=c.aulasLog||[];
-  var ciclos=log.filter(function(e){return e.tipo==='ciclo';}).sort(function(a,b){return eventTs(b)-eventTs(a);});
-  if(ciclos.length) return {data:ciclos[0].data,ts:eventTs(ciclos[0])};
-  var cfg=c.pacote||{};
-  if(cfg.cicloInicio) return {data:cfg.cicloInicio,ts:dateStartTs(cfg.cicloInicio)};
-  var now=new Date();
-  var d=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-01';
-  return {data:d,ts:dateStartTs(d)};
-}
 function aulasStats(c){
   var log=c.aulasLog||[];
-  var cfg=c.pacote||{};
-  var ciclo=currentCicloInicio(c);
-  var cicloEvents=log.filter(function(e){return e.tipo!=='ciclo'&&eventTs(e)>=ciclo.ts;});
-  var realizadas=cicloEvents.filter(function(e){return e.tipo==='realizada';}).length;
-  var faltas=cicloEvents.filter(function(e){return e.tipo==='falta';}).length;
-  var faltasSemRepo=cicloEvents.filter(function(e){return e.tipo==='falta'&&!e.reposicao;}).length;
-  var reposicoes=cicloEvents.filter(function(e){return e.tipo==='reposicao';}).length;
-  var creditosGerados=log.filter(function(e){return e.tipo==='falta'&&e.reposicao;}).length+(c.creditosCarry||0);
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0');
+  var thisMonth=log.filter(function(e){return (e.data||'').startsWith(ym);});
+  var realizadas=thisMonth.filter(function(e){return e.tipo==='realizada';}).length;
+  var faltas=thisMonth.filter(function(e){return e.tipo==='falta';}).length;
+  var reposicoes=thisMonth.filter(function(e){return e.tipo==='reposicao';}).length;
+  var creditosGerados=log.filter(function(e){return e.tipo==='falta'&&e.reposicao;}).length;
   var creditosUsados=log.filter(function(e){return e.tipo==='reposicao';}).length;
   var creditos=Math.max(0,creditosGerados-creditosUsados);
+  var cfg=c.pacote||{};
   var total=cfg.aulasPorMes||0;
-  var feitas=realizadas+reposicoes+faltasSemRepo;
+  var feitas=realizadas+reposicoes;
   var restantes=Math.max(0,total-feitas);
   var pct=total?Math.min(100,Math.round(feitas/total*100)):0;
-  var cicloCompleto=total>0&&feitas>=total;
-  return {realizadas:realizadas,faltas:faltas,reposicoes:reposicoes,creditos:creditos,total:total,restantes:restantes,feitas:feitas,pct:pct,cicloInicio:ciclo.data,cicloCompleto:cicloCompleto};
+  return {realizadas:realizadas,faltas:faltas,reposicoes:reposicoes,creditos:creditos,total:total,restantes:restantes,feitas:feitas,pct:pct,thisMonth:thisMonth};
 }
 function buildAulasTab(c){
   var st=aulasStats(c);
@@ -3519,14 +3320,14 @@ function buildAulasTab(c){
   var temRepo=cfg.temReposicao!==false;
   var log=(c.aulasLog||[]).slice().sort(function(a,b){return (b.data||'').localeCompare(a.data||'');});
   var logHTML=log.slice(0,40).map(function(e,i){
-    var lbl=e.tipo==='realizada'?'✓ Aula realizada':e.tipo==='reposicao'?'↺ Reposição usada':e.tipo==='ciclo'?'🔄 Novo ciclo '+(e.auto?'(automático — plano completo)':'(iniciado manualmente)'):'✗ Falta'+(e.reposicao?' (gera reposição)':'');
+    var lbl=e.tipo==='realizada'?'✓ Aula realizada':e.tipo==='reposicao'?'↺ Reposição usada':'✗ Falta'+(e.reposicao?' (gera reposição)':'');
     var dtFmt=(e.data||'').split('-').reverse().join('/');
     var hoje2=new Date().toISOString().slice(0,10);
     var isRetro=e.data&&e.data<hoje2;
     return '<div class="aula-log-row">'      +'<div class="aula-dot '+e.tipo+'"></div>'      +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">'+lbl+'</div>'      +(e.obs?'<div style="font-size:11.5px;color:var(--text-faint)">'+esc(e.obs)+'</div>':'')      +(isRetro?'<div style="font-size:10.5px;color:var(--text-faint);margin-top:1px">retroativo</div>':'')      +'</div>'      +'<div style="font-size:12px;color:var(--text-faint);white-space:nowrap;margin-right:4px">'+dtFmt+'</div>'      +'<button data-idx="'+i+'" data-cid="'+c.id+'" onclick="desfazerAula(this.dataset.cid,+this.dataset.idx)" style="background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:5px" title="Remover">✕</button>'      +'</div>';
   }).join('');
   var hj=new Date().toISOString().slice(0,10);
-  return '<div class="panel">'    +'<div class="panel-title"><span class="dot"></span>Registrar aula rapidamente</div>'    +'<div id="aula_data_retro_wrap" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 12px;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border)">'    +'<span style="font-size:12px;color:var(--text-faint);font-weight:600;white-space:nowrap">📅 Data da aula:</span>'    +'<input type="date" id="aula_data_retro_'+c.id+'" value="'+hj+'" max="'+hj+'" '    +'style="flex:1;background:transparent;border:none;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;outline:none;min-width:0">'    +'<span class="aula-retro-hint" style="font-size:11px;color:var(--text-faint);white-space:nowrap">← mude para registrar retroativo</span>'    +'</div>'    +'<div class="aula-quick">'
+  return '<div class="panel">'    +'<div class="panel-title"><span class="dot"></span>Registrar aula rapidamente</div>'    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 12px;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border)">'    +'<span style="font-size:12px;color:var(--text-faint);font-weight:600;white-space:nowrap">📅 Data da aula:</span>'    +'<input type="date" id="aula_data_retro_'+c.id+'" value="'+hj+'" max="'+hj+'" '    +'style="flex:1;background:transparent;border:none;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;outline:none;min-width:0">'    +'<span style="font-size:11px;color:var(--text-faint);white-space:nowrap">← mude para registrar retroativo</span>'    +'</div>'    +'<div class="aula-quick">'
     +'<button class="aula-qbtn realizada" data-cid="'+c.id+'" onclick="registrarAula(this.dataset.cid,\'realizada\',false)"><span class="qbtn-icon">✓</span>Aula feita</button>'
     +(temRepo
       ?'<button class="aula-qbtn falta" data-cid="'+c.id+'" onclick="registrarAula(this.dataset.cid,\'falta\',true)"><span class="qbtn-icon">✗</span>Faltou (c/ repo)</button>'
@@ -3543,17 +3344,11 @@ function buildAulasTab(c){
     +'</div>'
     +(st.total?'<div style="margin-bottom:18px">'
       +'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-faint);margin-bottom:4px">'
-      +'<span>Progresso do ciclo <span style="color:var(--text-faint);font-weight:600">(desde '+st.cicloInicio.split('-').reverse().join('/')+')</span></span>'
+      +'<span>Progresso de '+new Date().toLocaleString('pt-BR',{month:'long'})+'</span>'
       +'<span><b style="color:var(--text)">'+st.feitas+'</b>/'+st.total+' aulas</span></div>'
       +'<div class="aula-stat-bar"><div class="aula-stat-fill '+barCls+'" style="width:'+st.pct+'%"></div></div>'
-      +(st.cicloCompleto&&st.creditos===0?'<div style="font-size:11.5px;color:var(--text-faint);margin-top:4px">Ciclo completo — um novo ciclo será iniciado automaticamente na próxima aula.</div>':'')
+      +(st.pct>=100?'<div style="font-size:11.5px;color:var(--danger);margin-top:4px;font-weight:700">Plano esgotado este mês.</div>':'')
       +'</div>':'')
-    +(st.cicloCompleto&&st.creditos>0?'<div class="aula-ciclo-warn"><div class="aci-icon">⚠️</div><div class="aci-body">'
-      +'<b>Ciclo completo, mas há '+st.creditos+' reposição'+(st.creditos>1?'ões':'')+' pendente'+(st.creditos>1?'s':'')+'.</b><br>'
-      +'O novo ciclo não inicia sozinho enquanto houver reposição em aberto — resolva a'+(st.creditos>1?'s':'')+' reposiç'+(st.creditos>1?'ões':'ão')+' pendente'+(st.creditos>1?'s':'')+' ou inicie manualmente abaixo.'
-      +'<br><button class="aula-ciclo-btn" data-cid="'+c.id+'" onclick="iniciarNovoCiclo(this.dataset.cid,false)">🔄 Iniciar novo ciclo mesmo assim</button>'
-      +'</div></div>'
-      :(st.total?'<button class="aula-ciclo-manual" data-cid="'+c.id+'" onclick="iniciarNovoCiclo(this.dataset.cid,false)">🔄 Iniciar novo ciclo manualmente</button>':''))
     +'</div>'
     +'<div class="panel" style="margin-top:14px">'
     +'<div class="panel-title"><span class="dot"></span>Configuração do plano mensal</div>'
@@ -3584,30 +3379,6 @@ async function registrarAula(cid,tipo,reposicao){
   var lbl=tipo==='realizada'?'Aula registrada':tipo==='reposicao'?'Reposição registrada':'Falta registrada';
   toast(lbl+' — '+dtFmt);
   if(inp)inp.value=new Date().toISOString().slice(0,10);
-  var st=aulasStats(c);
-  if(st.cicloCompleto&&st.creditos===0){
-    await iniciarNovoCiclo(cid,true);
-    return;
-  }
-  if(st.cicloCompleto&&st.creditos>0){
-    setTimeout(function(){toast('⚠ Plano completo, mas há '+st.creditos+' reposição'+(st.creditos>1?'ões':'')+' pendente'+(st.creditos>1?'s':'')+'. Novo ciclo só inicia manualmente.');},1400);
-  }
-  renderTrainerBody(c);
-}
-async function iniciarNovoCiclo(cid,auto){
-  var c=clients.find(function(x){return x.id===cid;}); if(!c)return;
-  var stBefore=aulasStats(c);
-  if(!auto){
-    var msg=stBefore.creditos>0
-      ?'Ainda há '+stBefore.creditos+' reposição'+(stBefore.creditos>1?'ões':'')+' pendente'+(stBefore.creditos>1?'s':'')+'. Iniciar um novo ciclo mesmo assim? O histórico será limpo, mas a reposição em aberto continua valendo.'
-      :'Iniciar um novo ciclo agora? Isso limpa o histórico e zera a contagem de aulas do ciclo atual.';
-    if(!confirm(msg))return;
-  }
-  c.creditosCarry=stBefore.creditos; // preserva saldo de reposição pendente mesmo limpando o histórico
-  var hoje=new Date().toISOString().slice(0,10);
-  c.aulasLog=[{data:hoje,tipo:'ciclo',auto:!!auto,reposicao:false,obs:'',ts:Date.now()}]; // limpa histórico antigo — só fica o marcador do novo ciclo
-  try{ await persist(); }catch(err){ console.error('Erro ao salvar novo ciclo:',err); toast('⚠ Erro ao salvar — dado mantido localmente'); }
-  toast(auto?'🔄 Plano completo — novo ciclo iniciado automaticamente!':'🔄 Novo ciclo iniciado');
   renderTrainerBody(c);
 }
 async function desfazerAula(cid,idx){
@@ -3752,7 +3523,7 @@ function programHistoryHTML(c){
         <span style="font-size:11px;color:var(--text-faint)">${esc(h.savedAt?new Date(h.savedAt).toLocaleDateString('pt-BR'):"?")} · ${nd} dias</span>
       </div>
       ${h.program.summary?`<div style="font-size:12px;color:var(--text-dim);margin:5px 0 4px;line-height:1.45">${esc(h.program.summary.substring(0,120))}${h.program.summary.length>120?'…':''}</div>`:''}
-      ${preview?`<div style="font-size:11.5px;color:var(--text-faint)">Treino A: ${esc(preview)}</div>`:''}
+      ${preview?`<div style="font-size:11.5px;color:var(--text-faint)">Dia A: ${esc(preview)}</div>`:''}
       <button class="btn ghost sm" style="margin-top:8px" onclick="viewHistProgram('${c.id}',${i})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Ver programa completo</button>
     </div>`;
   }).join("");
@@ -3884,7 +3655,7 @@ PAR-Q positivo: ${parqTxt}
 Observações: ${c.notes||"nenhuma"}${extra?"\nInstruções do treinador: "+extra:""}
 
 Responda em português do Brasil APENAS com um objeto JSON dentro de um bloco \`\`\`json ... \`\`\`, sem nenhum texto fora do bloco. Schema exato:
-{"summary":"2-4 frases de racional","principles":["3-5 princípios curtos aplicados"],"days":[{"name":"Treino A — ...","focus":"grupos musculares","exercises":[{"name":"","sets":"","reps":"","rest":"","rpe":"","notes":""}]}],"progression":"como progredir nas próximas semanas","warnings":"cuidados com saúde/lesões deste aluno (ou vazio)","references":[{"title":"","url":""}]}
+{"summary":"2-4 frases de racional","principles":["3-5 princípios curtos aplicados"],"days":[{"name":"Dia A — ...","focus":"grupos musculares","exercises":[{"name":"","sets":"","reps":"","rest":"","rpe":"","notes":""}]}],"progression":"como progredir nas próximas semanas","warnings":"cuidados com saúde/lesões deste aluno (ou vazio)","references":[{"title":"","url":""}]}
 Gere exatamente ${c.days} dias de treino coerentes com o objetivo. Quando adequado ao objetivo e nível, aplique métodos avançados: (a) bi-set — executar 2 exercícios agonista-antagonista sem descanso (ex.: supino + remada; bíceps + tríceps) — indique com campo "method":"biset" em ambos; (b) drop-set — reduzir peso ~20% ao atingir a falha sem descanso — indique com "method":"dropset"; (c) pirâmide ascendente — aumentar peso a cada série — indique com "method":"piramide". Use métodos apenas se coerentes com o objetivo e nível do aluno (iniciantes: evitar; intermediários/avançados: aplicar com moderação). Em "references" liste as fontes que você consultou (com URL quando houver).`;
 }
 async function copyText(t){
@@ -3916,10 +3687,10 @@ function editableDaysHTML(p){
   return (p.days||[]).map((d,di)=>`<div class="day">
     <div class="day-head"><input data-d="${di}" data-dk="name" value="${esc(d.name)}">
       <input class="focus" data-d="${di}" data-dk="focus" value="${esc(d.focus||"")}" placeholder="grupos">
-      <button class="day-x" title="Remover treino" onclick="delDay(${di})">✕</button></div>
+      <button class="day-x" title="Remover dia" onclick="delDay(${di})">✕</button></div>
     <table><thead><tr><th style="width:26%">Exercício</th><th>Séries</th><th>Reps</th><th>Desc.</th><th>RPE</th><th>Método</th><th style="width:14%">Obs.</th><th title="Unilateral (×2 tonelagem)">×2</th><th style="width:60px"></th></tr></thead>
     <tbody>${(d.exercises||[]).map((ex,ei)=>`<tr>
-      <td class="ex"><div class="ex-alts-wrap"><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="name" value="${esc(ex.name)}" list="exlib_datalist" style="width:calc(100% - 36px)"><button class="ex-alts-btn" title="Ver exercícios alternativos" onclick="toggleExAlts(${di},${ei},this)">≈↕</button><div class="ex-alts-dd" id="alts_dd_${di}_${ei}"></div></div></td>
+      <td class="ex"><div class="ex-alts-wrap"><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="name" value="${esc(ex.name)}" style="width:calc(100% - 36px)"><button class="ex-alts-btn" title="Ver exercícios alternativos" onclick="toggleExAlts(${di},${ei},this)">≈↕</button><div class="ex-alts-dd" id="alts_dd_${di}_${ei}"></div></div></td>
       <td><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="sets" value="${esc(ex.sets)}"></td>
       <td><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="reps" value="${esc(ex.reps)}"></td>
       <td><input class="cell-in" data-d="${di}" data-i="${ei}" data-k="rest" value="${esc(ex.rest)}"></td>
@@ -3933,7 +3704,7 @@ function editableDaysHTML(p){
         <button class="row-x" title="Séries preparatórias" onclick="togglePrepPanel(${di},${ei})" style="color:var(--warn)">🔥</button>
         <button class="row-x" title="Remover" onclick="delEx(${di},${ei})">✕</button>
       </td></tr><tr id="preprow_${di}_${ei}" style="display:${(ex.prepSets&&ex.prepSets.length)?'table-row':'none'}"><td colspan="8" style="padding:0 8px 8px"><div class="prep-editor" id="prepeditor_${di}_${ei}"><div class="prep-editor-head">🔥 Séries preparatórias</div>${buildPrepEditorRows(di,ei,ex.prepSets||[])}<button class="prep-tag-btn" onclick="addPrepSet(${di},${ei})" style="margin-top:6px">+ Série prep.</button></div></td></tr>`).join("")}</tbody></table>
-    <div class="day-foot"><button class="btn ghost sm" onclick="addEx(${di})">+ Exercício</button></div>${buildCardioSectionHTML(di)}</div>`).join("")+exLibDatalistHTML();
+    <div class="day-foot"><button class="btn ghost sm" onclick="addEx(${di})">+ Exercício</button></div>${buildCardioSectionHTML(di)}</div>`).join("");
 }
 function moveEx(di,ei,dir){
   var c=curProg();if(!c)return;
@@ -4149,7 +3920,7 @@ function renderProgram(p){
   const tabs=wks.length?`<div class="wk-tabs">${tab('base','Base ✎',viewWeek==null)}${wks.map((w,i)=>tab(i,'S'+(i+1),viewWeek===i)).join("")}${tab('all','Todas',viewWeek==='all')}</div>`:"";
   let daysHTML, footHint;
   if(viewWeek==null){
-    daysHTML = editableDaysHTML(p) + `<button class="btn ghost sm" onclick="addDay()" style="margin:2px 0 18px">+ Adicionar treino</button><button class="btn ghost sm" style="margin-left:8px" onclick="openAutoCardioPlan('${c&&c.id||currentId||''}')">🏃 Plano automático cardio</button>`;
+    daysHTML = editableDaysHTML(p) + `<button class="btn ghost sm" onclick="addDay()" style="margin:2px 0 18px">+ Adicionar dia</button><button class="btn ghost sm" style="margin-left:8px" onclick="openAutoCardioPlan('${c&&c.id||currentId||''}')">🏃 Plano automático cardio</button>`;
     footHint = `Esta é a <b>semana-base</b> (acúmulo, 100%). Edite aqui — as 4 semanas derivam dela. Tudo é salvo automaticamente.`;
   } else if(viewWeek==='all'){
     daysHTML = wks.map((w,i)=>weekBlockHTML(p,w,i)).join("");
@@ -4341,46 +4112,12 @@ function trainerMsgTabHTML(c){
     </div>
   </div>`;
 }
-/* ===== Escolha do aluno: qual treino inicia a semana ===== */
-function weekStartKey(cid){ return 'nucleo_weekstart_'+cid; }
-function getWeekStartOverride(c,week){
-  try{
-    var raw=localStorage.getItem(weekStartKey(c.id));
-    if(!raw)return null;
-    var v=JSON.parse(raw);
-    if(v&&v.week===week&&typeof v.day==='number')return v.day;
-  }catch(e){}
-  return null;
-}
-function setWeekStartOverride(c,week,day){
-  try{ localStorage.setItem(weekStartKey(c.id),JSON.stringify({week:week,day:day})); }catch(e){}
-}
-function stuChooseWeekStart(week,day){
-  if(!sClient)return;
-  setWeekStartOverride(sClient,week,day);
-  renderStudentHome();
-}
-function weekStartPickerHTML(c,next,doneThisWeek){
-  var days=c.program.days||[];
-  if(next.allDone||doneThisWeek>0||days.length<2)return '';
-  var ov=getWeekStartOverride(c,next.week);
-  var chips=days.map(function(d,i){
-    var active=(ov==null?i===0:i===ov);
-    return '<button class="wkstart-chip'+(active?' active':'')+'" onclick="stuChooseWeekStart('+next.week+','+i+')">'+esc(d.name||('Treino '+(i+1)))+'</button>';
-  }).join('');
-  return '<div class="wkstart-picker"><div class="wkstart-label">Qual treino vai iniciar a semana?</div><div class="wkstart-chips">'+chips+'</div></div>';
-}
 function getNextSession(c){
   const meso=mesoFor(c),weeks=meso.weeks||[],days=(c.program.days||[]);
   if(!weeks.length||!days.length)return{week:0,day:0};
   const log=c.rpeLog||[];
   for(let wi=0;wi<weeks.length;wi++){
-    var startIdx=0;
-    var ov=getWeekStartOverride(c,wi);
-    if(typeof ov==='number'&&ov>=0&&ov<days.length)startIdx=ov;
-    var order=[];
-    for(let k=0;k<days.length;k++)order.push((startIdx+k)%days.length);
-    for(const di of order){
+    for(let di=0;di<days.length;di++){
       const done=log.some(s=>(+s.week||0)===wi&&(s.dayName||"")===(days[di].name||""));
       if(!done)return{week:wi,day:di};
     }
@@ -4399,7 +4136,7 @@ function buildStudentDashboard(c,first){
   const nextExCount=(day.exercises||[]).filter(e=>e.pat!=='cond').length;
   const estMin=Math.round(nextExCount*11+10);
   const totalSess=log.length;
-  const isNewWeek=!next.allDone&&next.week>0&&log.filter(s=>(+s.week||0)===next.week).length===0;
+  const isNewWeek=!next.allDone&&next.day===0&&next.week>0&&log.filter(s=>(+s.week||0)===next.week).length===0;
   // Semanas consecutivas com ao menos 1 sessão
   let streakW=0;
   for(let wi=next.week;wi>=0;wi--){if(log.some(s=>(+s.week||0)===wi))streakW++;else break;}
@@ -5199,7 +4936,7 @@ function renderLoadPanel(){
         <span title="variabilidade dia a dia (Foster)">Monotonia <b style="color:${monoWarn?'var(--warn)':'var(--text)'}">${monoTxt}</b></span>
         <span>Strain <b>${st.strain??"—"}</b></span>
       </div>
-      <div class="lw-rec" style="border-color:${ar.col}33"><span class="lw-badge" style="background:${ar.col}22;color:${ar.col}">${ar.level}</span> ${esc(ar.msg)}${monoWarn?' <span style="color:var(--warn)">· Monotonia alta: alterne treinos pesados/leves.</span>':''}</div>
+      <div class="lw-rec" style="border-color:${ar.col}33"><span class="lw-badge" style="background:${ar.col}22;color:${ar.col}">${ar.level}</span> ${esc(ar.msg)}${monoWarn?' <span style="color:var(--warn)">· Monotonia alta: alterne dias pesados/leves.</span>':''}</div>
     </div>`;
   });
   const _logFiltered=_sessSearch?log.filter(function(s){
@@ -5299,14 +5036,14 @@ function renderLoadPanel(){
 function curProg(){const c=clients.find(x=>x.id===currentId);return c&&c.program?c:null;}
 function addEx(di){const c=curProg();if(!c)return;c.program.days[di].exercises.push({name:"",sets:"",reps:"",rest:"",rpe:"",notes:""});persist();renderProgram(c.program);}
 function delEx(di,ei){const c=curProg();if(!c)return;c.program.days[di].exercises.splice(ei,1);persist();renderProgram(c.program);toast("Removido");}
-function addDay(){const c=curProg();if(!c)return;c.program.days.push({name:"Novo treino",focus:"",exercises:[{name:"",sets:"",reps:"",rest:"",rpe:"",notes:""}]});persist();renderProgram(c.program);}
-function delDay(di){const c=curProg();if(!c)return;if(!confirm("Remover este treino inteiro?"))return;c.program.days.splice(di,1);persist();renderProgram(c.program);toast("Dia removido");}
+function addDay(){const c=curProg();if(!c)return;c.program.days.push({name:"Novo dia",focus:"",exercises:[{name:"",sets:"",reps:"",rest:"",rpe:"",notes:""}]});persist();renderProgram(c.program);}
+function delDay(di){const c=curProg();if(!c)return;if(!confirm("Remover este dia inteiro?"))return;c.program.days.splice(di,1);persist();renderProgram(c.program);toast("Dia removido");}
 let anaT;function refreshAnalytics(){clearTimeout(anaT);anaT=setTimeout(renderAnalytics,250);}
 document.addEventListener("input",e=>{
   const t=e.target;if(!t.dataset)return;const c=curProg();if(!c)return;
   if(t.dataset.pk){c.program[t.dataset.pk]=t.value;scheduleSave();return;}
   if(t.dataset.dk!=null&&t.dataset.d!=null){c.program.days[+t.dataset.d][t.dataset.dk]=t.value;scheduleSave();if(t.dataset.dk==="name")renderSidebar();return;}
-  if(t.dataset.k&&t.dataset.d!=null&&t.dataset.i!=null){var _ex=c.program.days[+t.dataset.d].exercises[+t.dataset.i];var _val=t.type==="checkbox"?t.checked:t.value;_ex[t.dataset.k]=_val;if(t.dataset.k==="name"){_ex.pat=patOf({name:t.value})||null;}scheduleSave();if(t.dataset.k==="sets"||t.dataset.k==="name")refreshAnalytics();return;}
+  if(t.dataset.k&&t.dataset.d!=null&&t.dataset.i!=null){var _ex=c.program.days[+t.dataset.d].exercises[+t.dataset.i];var _val=t.type==="checkbox"?t.checked:t.value;_ex[t.dataset.k]=_val;if(t.dataset.k==="name"){_ex.pat=NAME2PAT[t.value]||patOf({name:t.value})||null;}scheduleSave();if(t.dataset.k==="sets"||t.dataset.k==="name")refreshAnalytics();return;}
 });
 
 /* ============ Séries preparatórias ============ */
@@ -5432,14 +5169,14 @@ function openAutoCardioPlan(cid){
   }).join('');
   var nDays=(c.program.days||[]).length;
   document.getElementById('modal').innerHTML=
-    '<div class="modal-head"><h3>🏃 Plano Automático de Cardio</h3><p>Distribui sessões de cardio automaticamente pelos treinos do programa, com progressão semanal.</p></div>'
+    '<div class="modal-head"><h3>🏃 Plano Automático de Cardio</h3><p>Distribui sessões de cardio automaticamente pelos dias do treino, com progressão semanal.</p></div>'
     +'<div class="form-section"><div class="sec-t">Configurar</div>'
     +'<div class="fgrid">'
     +'<div class="fl full"><label>Objetivo do plano</label><select id="ac_goal">'+opts+'</select></div>'
-    +'<div class="fl"><label>Distribuir a partir do treino nº</label><select id="ac_start">'
-    +Array.from({length:nDays},function(_,i){return '<option value="'+i+'">Treino '+(i+1)+' — '+((c.program.days[i]||{}).name||'')+'</option>';}).join('')
+    +'<div class="fl"><label>Distribuir a partir do dia nº</label><select id="ac_start">'
+    +Array.from({length:nDays},function(_,i){return '<option value="'+i+'">Dia '+(i+1)+' — '+((c.program.days[i]||{}).name||'')+'</option>';}).join('')
     +'</select></div>'
-    +'<div class="fl"><label>Frequência</label><select id="ac_freq"><option value="1">Em todo treino</option><option value="2" selected>A cada 2 dias</option><option value="3">A cada 3 dias</option></select></div>'
+    +'<div class="fl"><label>Frequência</label><select id="ac_freq"><option value="1">Em todo dia de treino</option><option value="2" selected>A cada 2 dias</option><option value="3">A cada 3 dias</option></select></div>'
     +'</div>'
     +'<div class="alert ok" style="margin-top:14px"><div>ℹ</div><div><b>Como funciona</b><div class="body">O motor seleciona o método cardio do plano conforme a semana do mesociclo atual, distribui pelos dias selecionados e respeita a frequência escolhida. Sessões existentes não são substituídas.</div></div></div>'
     +'</div>'
@@ -5472,7 +5209,7 @@ function applyAutoCardioPlan(cid){
   persist();
   closeModal();
   renderProgram(c.program);
-  toast(added>0?'Cardio adicionado em '+added+' treino(s) — método: '+(CARDIO_METHODS[chosen.method]||{name:chosen.method}).name:'Nenhum dia novo — sessão já existia.');
+  toast(added>0?'Cardio adicionado em '+added+' dia(s) — método: '+(CARDIO_METHODS[chosen.method]||{name:chosen.method}).name:'Nenhum dia novo — sessão já existia.');
 }
 /* ============ fim Plano automático cardio ============ */
 
@@ -5831,28 +5568,16 @@ document.getElementById("overlay").addEventListener("click",e=>{if(e.target.id==
 /* ============ Init ============ */
 (async function(){
   if(sb){
-    let _handled=false;
     try{
-      await Promise.race([
-        (async function(){
-          const {data:{session}}=await sb.auth.getSession();
-          if(session&&session.user){
-            const uid=session.user.id;
-            const {data:prof}=await sb.from("profiles").select("role,name").eq("id",uid).maybeSingle();
-            if(prof&&prof.role==="student"){ await startStudentSessionCloud(uid); if(sClient){_handled=true;} }
-            else { trainer={id:uid,name:(prof&&prof.name)||session.user.email,email:session.user.email}; clients=await dbLoadClients(uid); showApp(); goDashboard(); _renderNotifBadge(); _handled=true; }
-          }
-        })(),
-        new Promise(function(_,reject){setTimeout(function(){reject(new Error('timeout: Supabase demorou demais para responder'));},12000);})
-      ]);
-    }catch(e){
-      console.error('[boot]',e);
-      if(String(e&&e.message||'').indexOf('timeout')>-1){
-        setTimeout(function(){ if(typeof toast==='function')toast('⚠ Conexão lenta — tente novamente em instantes'); },600);
+      const {data:{session}}=await sb.auth.getSession();
+      if(session&&session.user){
+        const uid=session.user.id;
+        const {data:prof}=await sb.from("profiles").select("role,name").eq("id",uid).maybeSingle();
+        if(prof&&prof.role==="student"){ await startStudentSessionCloud(uid); if(sClient) return; }
+        else { trainer={id:uid,name:(prof&&prof.name)||session.user.email,email:session.user.email}; clients=await dbLoadClients(uid); showApp(); goDashboard(); _renderNotifBadge(); return; }
       }
-    }
-    if(!_handled)showAuth();
-    return;
+    }catch(e){ console.error(e); }
+    showAuth(); return;
   }
   trainers=await sget(TRAINERS_KEY)||[];
   const sess=await sget(SESSION_KEY);
@@ -5930,8 +5655,8 @@ function pwaDismiss(){
 (function(){
   if(!('serviceWorker' in navigator))return;
   const swSrc=[
-    'const APP_CACHE="nucleo-v3";',
-    'const FONT_CACHE="nucleo-fonts-v3";',
+    'const APP_CACHE="nucleo-v2";',
+    'const FONT_CACHE="nucleo-fonts-v2";',
     'self.addEventListener("install",function(){self.skipWaiting();});',
     'self.addEventListener("activate",function(e){',
     '  e.waitUntil(caches.keys().then(function(keys){',
@@ -5951,8 +5676,7 @@ function pwaDismiss(){
     '    }));',
     '    return;',
     '  }',
-    '  var netReq=new Request(url,{cache:"no-store"});', // bypassa o cache HTTP do navegador — garante bytes realmente novos a cada deploy
-    '  e.respondWith(fetch(netReq).then(function(res){',
+    '  e.respondWith(fetch(e.request).then(function(res){',
     '    var clone=res.clone();',
     '    caches.open(APP_CACHE).then(function(c){c.put(e.request,clone);});',
     '    return res;',
@@ -6014,6 +5738,7 @@ function pwaDismiss(){
       _syncLock=false;
     }).catch(function(){_syncLock=false;});
   }
+  window._nucleo_syncQ=_nucleo_syncQ; /* expõe global — botão "Sincronizar" do badge usa onclick inline */
   window.addEventListener('online',function(){
     _updateOnline();
     if(typeof toast==='function')toast('Conexão restaurada!');
