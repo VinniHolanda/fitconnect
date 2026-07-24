@@ -1286,12 +1286,18 @@ function emphasisPatterns(extra){
 }
 const SUBSTITUTE={shoulder_iso:["push_v","push_h"],push_v:["shoulder_iso","push_h"],arms_bi:["pull_h"],arms_tri:["push_h"],rear:["pull_h"],calf:["core"],pull_v:["pull_h"],hinge:["quad"]};
 function levelOK(x,level,conservative){ return !(x.adv&&(level==="Iniciante"||conservative)); }
-function pickOne(pat,profile,avoid,conservative,used,level,allowSub=true){
+function pickOne(pat,profile,avoid,conservative,used,level,allowSub=true,recentW){
   const ok=x=>x.eqs.includes(profile)&&!used.has(x.n)&&!(x.av||[]).some(t=>avoid.has(t))&&!(conservative&&x.heavy)&&levelOK(x,level,conservative);
   let cand=EX.filter(x=>x.p===pat&&ok(x));                                                  // 1: padrão (equipamento + nível ok)
   if(!cand.length&&allowSub){ for(const sp of (SUBSTITUTE[pat]||[])){ cand=EX.filter(x=>x.p===sp&&ok(x)); if(cand.length) break; } } // 2: substituto (só fora do motor por volume)
   if(!cand.length) return null;                                                             // 3: pula o slot (nunca sugere equipamento indisponível nem exercício acima do nível)
-  const pick=rnd(cand); used.add(pick.n); return pick;
+  let pool=cand;
+  if(recentW){
+    // prioriza exercícios menos usados nos ciclos recentes; só repete quando não há alternativa "fresca" no padrão/equipamento
+    const minW=Math.min.apply(null,cand.map(function(x){return recentW[x.n]||0;}));
+    pool=cand.filter(function(x){return (recentW[x.n]||0)===minW;});
+  }
+  const pick=rnd(pool); used.add(pick.n); return pick;
 }
 /* ── Métodos de treino: bi-set, drop-set, pirâmide ───────────────────────── */
 const METH_BADGE={biset:'<span class="meth biset">Bi-set</span>',dropset:'<span class="meth dropset">Drop-set</span>',piramide:'<span class="meth piramide">Pirâmide</span>'};
@@ -1300,7 +1306,8 @@ const METH_TIP={
   dropset:"Drop-set: ao atingir a falha, reduza o peso ~20% e continue imediatamente sem descanso (1–2 drops).",
   piramide:"Pirâmide ascendente: aumente o peso a cada série reduzindo as reps. Ex.: 12→10→8→6 reps."
 };
-function applyMethods(days,c){
+function applyMethods(days,c,variant){
+  variant=variant||'A';
   const goal=(c.goal||"").toLowerCase();
   const isHyp=/hipert|massa|volume/i.test(goal);
   const isStr=/força/i.test(goal);
@@ -1310,29 +1317,80 @@ function applyMethods(days,c){
     let biG=0,i=0;
     while(i<exs.length){
       const ex=exs[i];
-      // Pirâmide: 1º composto em treino de força
-      if(isStr&&i===0&&/push_h|push_v|pull_v|pull_h|hinge|quad/.test(ex.pat)){
-        ex.method="piramide";i++;continue;
+      const isCompound=/push_h|push_v|pull_v|pull_h|hinge|quad/.test(ex.pat);
+      // ---- FORÇA: varia onde entra a pirâmide (ou tira, no perfil C) ----
+      if(isStr){
+        if(variant==='A'&&i===0&&isCompound){ ex.method="piramide"; i++; continue; }
+        if(variant==='B'&&i===exs.length-1&&isCompound){ ex.method="piramide"; i++; continue; }
+        // variant C: séries retas, sem método especial — foco 100% em progressão de carga
       }
-      // Bi-set: agonista-antagonista em hipertrofia/emagrecimento
+      // ---- HIPERTROFIA/EMAGRECIMENTO: bi-set varia o critério de par ----
       if((isHyp||isEma)&&i<exs.length-1){
         const nx=exs[i+1];
         const isPush=/push_h|push_v|arms_tri/.test(ex.pat)||/supino|press|tricep|peit|fly/i.test(ex.name);
         const isNxPull=/pull_h|pull_v|arms_bi/.test(nx.pat)||/remada|puxada|rosca|bicep|costa|chin|row/i.test(nx.name);
         const isPull=/pull_h|pull_v|arms_bi/.test(ex.pat)||/remada|puxada|rosca|bicep|costa|chin|row/i.test(ex.name);
         const isNxPush=/push_h|push_v|arms_tri/.test(nx.pat)||/supino|press|tricep|peit|fly/i.test(nx.name);
-        if((isPush&&isNxPull)||(isPull&&isNxPush)){
+        if(variant==='A'&&((isPush&&isNxPull)||(isPull&&isNxPush))){
+          // agonista-antagonista (padrão original)
           ex.method="biset";ex.bisetGroup=biG;nx.method="biset";nx.bisetGroup=biG;biG++;i+=2;continue;
         }
+        if(variant==='B'&&ex.pat===nx.pat){
+          // agonista-agonista: dois exercícios do mesmo padrão em sequência (maior densidade no mesmo grupo)
+          ex.method="biset";ex.bisetGroup=biG;nx.method="biset";nx.bisetGroup=biG;biG++;i+=2;continue;
+        }
+        // variant C: sem bi-set — dá lugar a mais drop-set (abaixo)
       }
-      // Drop-set: último isolado em hipertrofia (≥3 exercícios no dia)
-      if(isHyp&&i===exs.length-1&&i>=2&&ex.pat&&/arms|iso|shoulder_iso|rear/.test(ex.pat)){
+      // ---- Drop-set: varia posição/quantidade ----
+      if(variant==='A'&&isHyp&&i===exs.length-1&&i>=2&&ex.pat&&/arms|iso|shoulder_iso|rear/.test(ex.pat)){
         ex.method="dropset";
+      }
+      if(variant==='B'&&(isHyp||isEma)&&isCompound&&i>0&&i===Math.floor(exs.length/2)){
+        ex.method="piramide"; // pirâmide num composto do meio do treino (não no isolado)
+      }
+      if(variant==='C'&&(isHyp||isEma)&&ex.pat&&/arms|iso|shoulder_iso|rear/.test(ex.pat)){
+        ex.method="dropset"; // aplica em todos os isolados (compensa a ausência de bi-set)
       }
       i++;
     }
   });
   return days;
+}
+/* ── Histórico de treino do aluno → variedade entre ciclos ────────────────── */
+// Pesa exercícios pelos últimos ciclos prescritos (c.programHistory) + sessões realmente
+// executadas recentemente (c.rpeLog) — quanto mais recente/frequente, maior o peso, e o motor
+// de geração (pickOne) prioriza candidatos com peso menor (não usados / usados há mais tempo).
+function buildRecentExerciseWeights(c,cyclesBack){
+  cyclesBack=cyclesBack||2;
+  const w={};
+  // c.program é o ciclo ATUAL (ainda ativo, só entra em programHistory quando for substituído) —
+  // por isso conta como o mais recente, seguido do histórico já salvo.
+  const progs=[]; if(c.program)progs.push(c.program);
+  (c.programHistory||[]).forEach(function(h){ if(h&&h.program)progs.push(h.program); });
+  progs.slice(0,cyclesBack).forEach(function(prog,idx){
+    const weight=cyclesBack-idx; // ciclo mais recente pesa mais
+    ((prog&&prog.days)||[]).forEach(function(d){
+      (d.exercises||[]).forEach(function(ex){
+        if(!ex.name)return; w[ex.name]=(w[ex.name]||0)+weight;
+      });
+    });
+  });
+  // reforço com o que o aluno de fato executou nas sessões recentes (reflete substituições/ajustes reais, não só o prescrito)
+  const recentSessions=(c.rpeLog||[]).slice(-16);
+  recentSessions.forEach(function(s){
+    (s.exercises||[]).forEach(function(ex){
+      if(!ex.name||ex._type==="wellness")return; w[ex.name]=(w[ex.name]||0)+0.5;
+    });
+  });
+  return w;
+}
+// Rotaciona o "perfil de metodologia" (A→B→C→A…) pra não repetir o mesmo padrão de bi-set/drop-set/pirâmide do ciclo anterior
+function nextMethodProfile(c){
+  const order=['A','B','C'];
+  const last=(c.program&&c.program._methodProfile)||(c.programHistory&&c.programHistory[0]&&c.programHistory[0].program&&c.programHistory[0].program._methodProfile);
+  if(!last)return order[0];
+  const i=order.indexOf(last);
+  return order[(i>=0?i+1:0)%order.length];
 }
 /* ── Fim de ciclo e novo período ──────────────────────────────────────────── */
 function isCycleComplete(c){
@@ -1403,12 +1461,14 @@ function buildProgram(c,extra){
   const rpe=conservative?"5-7":sc.rpe;
   const targets=buildTargets(c,emph,conservative);
   const remaining={...targets};                 // déficit corrente por músculo (semana inteira)
+  const recentW=buildRecentExerciseWeights(c);   // histórico de exercícios usados nos ciclos/sessões recentes → guia variedade
+  const mProfile=nextMethodProfile(c);           // rotaciona a metodologia (bi-set/drop-set/pirâmide) em relação ao ciclo anterior
   const days=split.days.map(([name,pats])=>{
     const palette=[...new Set(pats)].filter(p=>VOL_MAP[p]);   // músculos "no cardápio" deste dia
     const used=new Set(); const exs=[]; const chosen=[];
     for(let slot=0; slot<cap; slot++){
       const rank=arr=>arr.map(p=>({p,score:Math.max(...primaryMuscles(p).map(m=>remaining[m]??-99))})).sort((a,b)=>b.score-a.score);
-      const tryPick=list=>{ for(const {p} of list){ const e=pickOne(p,profile,avoid,conservative,used,c.level,false); if(e)return e; } return null; };
+      const tryPick=list=>{ for(const {p} of list){ const e=pickOne(p,profile,avoid,conservative,used,c.level,false,recentW); if(e)return e; } return null; };
       // padrões cujo músculo-alvo já passou ~1,15x do alvo saem da disputa (evita empilhar volume)
       const over=m=>{const t=targets[m]; return t!=null && remaining[m]<=-0.15*t;};
       const pool=palette.filter(pp=>primaryMuscles(pp).some(m=>!over(m)));
@@ -1427,8 +1487,8 @@ function buildProgram(c,extra){
     const usedFin=new Set();
     days.forEach(d=>{
       const used=new Set([...d.exercises.map(e=>e.name),...usedFin]);
-      let f=pickOne("cond",profile,avoid,conservative,used,c.level,false);
-      if(!f) f=pickOne("cond",profile,avoid,conservative,new Set(d.exercises.map(e=>e.name)),c.level,false); // recicla se acabar a variedade
+      let f=pickOne("cond",profile,avoid,conservative,used,c.level,false,recentW);
+      if(!f) f=pickOne("cond",profile,avoid,conservative,new Set(d.exercises.map(e=>e.name)),c.level,false,recentW); // recicla se acabar a variedade
       if(f){ usedFin.add(f.n); d.exercises.push({name:f.n,sets:"2-3",reps:"30-45s",rest:"45-60s",rpe,notes:"finalizador metabólico",pat:"cond"}); }
     });
   }
@@ -1436,14 +1496,18 @@ function buildProgram(c,extra){
   const summary=`Programa de ${split.days.length} dias no formato ${SPLIT_LABEL[split.type]}, montado para ${c.name.split(" ")[0]} (${c.level.toLowerCase()}) com foco em ${goalShort}, usando ${c.eq.toLowerCase()}. Séries e repetições calibradas para o objetivo${conservative?", em versão CONSERVADORA por sinalização no PAR-Q (cargas leves a moderadas, sem exercícios de alta sobrecarga axial)":""}${avoid.size?". Exercícios contraindicados pelas limitações relatadas foram automaticamente substituídos":""}.`;
   const principles=["Sobrecarga progressiva","Volume calibrado por grupo (alvo semanal)","Volume ajustado ao nível "+c.level.toLowerCase(),"Seleção por equipamento ("+c.eq.toLowerCase()+")",SPLIT_LABEL[split.type]];
   if(avoid.size) principles.push("Filtro de segurança: "+[...avoid].join(", "));
+  if(c.program){
+    const METH_LABEL={A:"agonista-antagonista + pirâmide no 1º composto",B:"agonista-agonista + pirâmide no meio do treino",C:"séries retas + drop-set nos isolados (sem bi-set)"};
+    principles.push("Variedade vs. ciclo anterior: exercícios priorizados por menor uso recente; metodologia rotacionada para o perfil "+mProfile+" ("+(METH_LABEL[mProfile]||"")+")");
+  }
   const warnings=buildWarnings(c,avoid,conservative);
   const references=[
     {t:"Faixas de repetição/descanso por objetivo (base: diretrizes de treinamento resistido do ACSM)"},
     {t:"Princípio da sobrecarga progressiva e progressão dupla"},
     {t:"Triagem de prontidão PAR-Q aplicada ao filtro de intensidade"},
   ];
-  applyMethods(days,c);
-  return {summary,principles,days,progression:sc.per,warnings,references,meso:buildMeso(c,conservative),targets,_engine:true};
+  applyMethods(days,c,mProfile);
+  return {summary,principles,days,progression:sc.per,warnings,references,meso:buildMeso(c,conservative),targets,_engine:true,_methodProfile:mProfile};
 }
 function focusOf(pats){
   const m={push_h:"Peito",push_v:"Ombro",shoulder_iso:"Ombro",pull_v:"Dorsal",pull_h:"Costas",rear:"Post. ombro",quad:"Quadríceps",hinge:"Posterior/Glúteo",arms_bi:"Bíceps",arms_tri:"Tríceps",core:"Core",calf:"Panturrilha"};
@@ -3638,6 +3702,19 @@ function generate(cid){
 }
 
 /* ============ Ponte copia-e-cola (usa o Claude do treinador) ============ */
+function buildHistoryPromptBlock(c){
+  const progs=[]; if(c.program)progs.push({program:c.program,label:'(ciclo atual)'});
+  (c.programHistory||[]).forEach(function(h){ if(h&&h.program)progs.push(h); });
+  const hist=progs.slice(0,2);
+  if(!hist.length) return "";
+  const lines=hist.map((h,idx)=>{
+    const names=[...new Set((((h.program&&h.program.days)||[])).flatMap(d=>(d.exercises||[]).map(e=>e.name)))];
+    const methods=[...new Set((((h.program&&h.program.days)||[])).flatMap(d=>(d.exercises||[]).map(e=>e.method).filter(Boolean)))];
+    const label=idx===0?"Ciclo mais recente":"Ciclo anterior a esse";
+    return label+" ("+(h.label||"")+"): "+(names.join(", ")||"—")+(methods.length?" | Metodologia usada: "+methods.join(", "):"");
+  });
+  return "\n\nHISTÓRICO DE CICLOS ANTERIORES (use para variar o novo treino — NÃO copie a mesma estrutura)\n"+lines.join("\n")+"\nINSTRUÇÃO DE VARIEDADE: gere um ciclo estruturalmente diferente do mais recente. Pode repetir até ~30-40% dos exercícios mais eficazes (mantenha o que funciona bem), mas troque a metodologia predominante (se o ciclo anterior usou pirâmide, prefira bi-set ou drop-set desta vez, ou vice-versa) e varie o agrupamento/ordem dos exercícios.";
+}
 function buildPrompt(c,extra){
   const flag=parqFlag(c), a=age(c.birth);
   const parqTxt=flag?("SIM — "+Object.entries(c.parq).filter(([k,v])=>v==="sim").map(([k])=>PARQ[+k]).join("; ")):"não";
@@ -3652,7 +3729,7 @@ Frequência: ${c.days} dias/semana | Sessão: ${c.dur} | Equipamento: ${c.eq}
 Doenças: ${(c.diseases||[]).join(", ")||"nenhuma"} | Medicamentos: ${c.meds||"nenhum"} | Cirurgias: ${c.surgery||"nenhuma"}
 Lesões/limitações: ${c.inj||"nenhuma"} | Tabagismo: ${c.smoke||"?"} | Sono: ${c.sleep||"?"}
 PAR-Q positivo: ${parqTxt}
-Observações: ${c.notes||"nenhuma"}${extra?"\nInstruções do treinador: "+extra:""}
+Observações: ${c.notes||"nenhuma"}${extra?"\nInstruções do treinador: "+extra:""}${buildHistoryPromptBlock(c)}
 
 Responda em português do Brasil APENAS com um objeto JSON dentro de um bloco \`\`\`json ... \`\`\`, sem nenhum texto fora do bloco. Schema exato:
 {"summary":"2-4 frases de racional","principles":["3-5 princípios curtos aplicados"],"days":[{"name":"Dia A — ...","focus":"grupos musculares","exercises":[{"name":"","sets":"","reps":"","rest":"","rpe":"","notes":""}]}],"progression":"como progredir nas próximas semanas","warnings":"cuidados com saúde/lesões deste aluno (ou vazio)","references":[{"title":"","url":""}]}
